@@ -1,0 +1,6185 @@
+swagger: '2.0'
+info:
+  version: 1.10.0 180820
+  # 1.10 姚丹，添加受控词、受控词条目相关接口
+  # 1.10 姚丹，添加班级、设备、教室、学校、学期相关接口
+  # 1.10 姚丹，添加预约接口中参数reserve-id改成非必填项
+  # 1.10 姚丹，增加了收藏相关接口
+  # 1.10 杜伟，增加了用户、权限相关接口
+  # 1.9 姚丹，增加了点赞相关接口
+  # 1.9 杜伟，增加了浏览记录定制接口，可以获得最新的课程浏览情况
+  # 1.9 杜伟，增加了浏览记录增加和查询接口
+  # 1.9 姚丹，增加了预约修改、删除、条件查询接口,course-info结构体增加是否挂载资源接口
+  # 1.9 姚丹，live-course-info结构体中增加是否支持回放字段：is-replay；直播课put方法中增加可选参数is-replay
+  # 1.9 姚丹，所有post、put、delete方法响应状态为200的响应结构中增加error-info信息(为了保证所有响应结构一致，便于处理)
+  # 1.8 姚丹，record-reserve-info结构体中增加直播ID字段：live-course-id
+  # 1.7 杜伟，增加了录播设备和录播教室相关接口
+  # 1.6 姚丹，upload-file-info中markpoints增加了keypoint-basicinfo结构体、去掉了items
+  # 1.5 姚丹，增加知识点的增删改查接口，resource-file中file-type的枚举值
+  # 1.4 杜伟，upload-file-info中增加了预约id、去掉了直播信息，加入课时的时候需要指定的顺序，录课预约接口返回增加了录制模式和预约用户
+  # 1.3 杜伟，所有日期类型都改为string，避免不兼容的情况；课程和直播的列表查询增加了条件等
+  # 1.2 姚丹，所有put方法都限制请求类型为：application/x-www-form-urlencoded，增加了设备和教室的查询接口
+  # 1.1 姚丹，完善课程、课时、直播课、文件的增删改查接口，获取节次文件上传路径接口
+  # 1.0 杜伟，/course-periods/addFileInfo接口增加mark点信息
+  # 0.9 杜伟，创建
+  ###################################################
+  #  规则：用小写，不用缩写，多个词连接用中横线
+  ###################################################
+
+  title: <education platform API>
+tags:
+  - name: course
+    description: 和课程管理相关的API，包括点播、直播课程的增删改查，还有对课程的点赞、评论等功能
+  - name: reserve
+    description: 和录播预约相关的API，包括录播教室预约等功能
+  - name: platform
+    description: 和后台管理相关的API，包括用户、权限、角色、设备、教室、班级的增删改查等功能
+paths:
+  /reserves:
+    post:
+      tags:
+        - reserve
+      summary: 添加录播预约记录
+      description: 添加录播预约记录
+      parameters:
+        - name: reserve-name
+          in: formData
+          description: 预约名称
+          required: true
+          type: string
+        - name: reserve-user-id
+          in: formData
+          description: 预约用户id
+          required: true
+          type: string
+        - name: reserve-user-name
+          in: formData
+          description: 预约用户名
+          required: true
+          type: string
+        - name: room-id
+          in: formData
+          description: 预约教室id
+          required: true
+          type: string
+        - name: room-name
+          in: formData
+          description: 预约教室名称
+          required: true
+          type: string
+        - name: start-time
+          in: formData
+          description: 预约开始时间，格式为yyyy-mm-dd hh:mm:ss
+          required: true
+          type: string
+        - name: end-time
+          in: formData
+          description: 预约结束时间，格式为yyyy-mm-dd hh:mm:ss
+          required: true
+          type: string
+        - name: course-id
+          in: formData
+          description: 课程ID，为录制哪个课程预约，可选
+          required: false
+          type: string
+        - name: live-course-id
+          in: formData
+          description: 直播课程ID，为录制哪个直播课程预约，可选
+          required: false
+          type: string
+        - name: period-id
+          in: formData
+          description: 课时ID，为录制哪个课时预约，可选
+          required: false
+          type: string
+        - name: record-mode
+          in: formData
+          description: 录课模式，0电影模式，1资源模式，2电影加资源模式
+          required: true
+          type: integer
+          format: int32
+        - name: is-auto-publish
+          in: formData
+          description: 是否自动发布，0：不自动发布 1：自动发布
+          required: true
+          type: integer
+          format: int32
+        - name: is-record
+          in: formData
+          description: 是否录制文件，0：不录制 1：录制
+          required: true
+          type: integer
+          format: int32
+        - name: is-live
+          in: formData
+          description: 是否直播，0：不直播 1：直播
+          required: true
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - reserve
+      summary: 获取预约列表
+      description: 获取预约列表
+      parameters:
+        - name: room-id
+          in: query
+          description: 预约教室ID
+          required: false
+          type: string
+        - name: date
+          in: query
+          description: 指定日期,格式为yyyy-mm-dd
+          required: false
+          type: string
+        - name: reserve-user-id
+          in: query
+          description: 预约用户ID
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: 申请状态 0：申请未审核 1：申请已审核
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/record-reserve-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /reserves/queryByRecordDevice:
+    get:
+      tags:
+        - reserve
+      summary: 录播机查询预约记录
+      description: 录播机查询预约记录
+      parameters:
+        - name: device-id
+          in: query
+          description: 录播设备ID 
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/record-reserve-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /reserves/{reserve-id}:
+    get:
+      tags:
+        - reserve
+      summary: 获取预约信息
+      description: 获取预约信息
+      parameters:
+        - name: reserve-id
+          in: path
+          description: 预约id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/record-reserve-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+    put:
+      tags:
+        - reserve
+      summary: 修改预约信息
+      description: 修改预约信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: reserve-id
+          in: path
+          description: 预约id
+          required: true
+          type: string
+        - name: reserve-name
+          in: formData
+          description: 预约名称
+          required: false
+          type: string
+        - name: start-time
+          in: formData
+          description: 预约开始时间，格式为yyyy-mm-dd hh:mm:ss
+          required: false
+          type: string
+        - name: end-time
+          in: formData
+          description: 预约结束时间，格式为yyyy-mm-dd hh:mm:ss
+          required: false
+          type: string
+        - name: record-mode
+          in: formData
+          description: 录课模式，0电影模式，1资源模式，2电影加资源模式
+          required: false
+          type: integer
+          format: int32
+        - name: is-auto-publish
+          in: formData
+          description: 是否自动发布，0：不自动发布 1：自动发布
+          required: false
+          type: integer
+          format: int32
+        - name: is-record
+          in: formData
+          description: 是否录制文件，0：不录制 1：录制
+          required: false
+          type: integer
+          format: int32
+        - name: is-live
+          in: formData
+          description: 是否直播，0：不直播 1：直播
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+    delete:
+      tags:
+        - reserve
+      summary: 删除一个预约信息
+      description: 删除一个预约信息
+      parameters:
+        - name: reserve-id
+          in: path
+          description: 预约id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+
+  /courses/{course-id}:
+    get:
+      tags:
+        - course
+      summary: 'get course info'
+      description: 'get course info'
+      parameters:
+        - name: course-id
+          in: path
+          description: course id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/course-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - course
+      summary: 'modify a course'
+      description: 'modify a course'
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: course-id
+          in: path
+          description: course id
+          required: true
+          type: string
+        - name: course-name
+          in: formData
+          description: course name
+          required: false
+          type: string
+        - name: type
+          in: formData
+          description: course type
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: course description
+          required: false
+          type: string
+        - name: outline
+          in: formData
+          description: course outline
+          required: false
+          type: string
+        - name: subject
+          in: formData
+          description: course subject
+          required: false
+          type: string
+        - name: grade
+          in: formData
+          description: course grade
+          required: false
+          type: string
+        - name: icon-resource-id
+          in: formData
+          description: course icon resource id
+          required: false
+          type: string
+        - name: icon-file
+          in: formData
+          description: course icon file
+          required: false
+          type: string
+        - name: publish-status
+          in: formData
+          description: course publish status
+          required: false
+          type: integer
+          format: int32
+        - name: is-recommand
+          in: formData
+          description: course is recommand
+          required: false
+          type: integer
+          format: int32
+        - name: is-mount-resource
+          in: formData
+          description: course is mount resource
+          required: false
+          type: integer
+          format: int32
+        - name: user-id
+          in: formData
+          description: user who own the course
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 'delelte a course'
+      description: 'delete a course, at the same time will delete all periods fo course'
+      parameters:
+        - name: course-id
+          in: path
+          description: course id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /courses:
+    post:
+      tags:
+        - course
+      summary: 'add a course'
+      description: 'add a course'
+      parameters:
+        - name: course-id
+          in: formData
+          description: course id
+          required: true
+          type: string
+        - name: course-name
+          in: formData
+          description: course name
+          required: true
+          type: string
+        - name: type
+          in: formData
+          description: course type
+          required: true
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: course description
+          required: false
+          type: string
+        - name: outline
+          in: formData
+          description: course outline
+          required: false
+          type: string
+        - name: subject
+          in: formData
+          description: course subject
+          required: false
+          type: string
+        - name: grade
+          in: formData
+          description: course grade
+          required: false
+          type: string
+        - name: icon-resource-id
+          in: formData
+          description: course icon resource id
+          required: false
+          type: string
+        - name: icon-file
+          in: formData
+          description: course icon file
+          required: false
+          type: string
+        - name: user-id
+          in: formData
+          description: user who own the course
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 查询课程列表
+      description: 查询课程列表
+      parameters:
+        - name: filter
+          in: query
+          description: 课程过滤，可能是课程名或者老师名等
+          required: false
+          type: string
+        - name: type
+          in: query
+          description: 课程类型,  0：精品课,1：班级课'
+          required: false
+          type: integer
+          format: int32
+        - name: subject
+          in: query
+          description: 课程的学科，比如化学，数学
+          required: false
+          type: string
+        - name: grade
+          in: query
+          description: 课程的年纪，比如一年级、二年级
+          required: false
+          type: string
+        - name: is-recommand
+          in: query
+          description: 是否推荐的课程,0不是推荐的，1是推荐的
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: 排序字段，如create-time|view-count|score'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: start index
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: record count per page
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/course-info'
+          headers:
+            X-total-count:
+              description: The total count of courses
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /live-courses/{course-id}:
+    put:
+      tags:
+        - course
+      summary: 'modify a live course'
+      description: 'modify a live course'
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: course-id
+          in: path
+          description: live course id
+          required: true
+          type: string
+        - name: course-name
+          in: formData
+          description: live course name
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: live course description
+          required: false
+          type: string
+        - name: start-time
+          in: formData
+          description: live course start time,format:yyyy-MM-dd HH:mm:ss
+          required: false
+          type: string
+        - name: end-time
+          in: formData
+          description: live course end time,format:yyyy-MM-dd HH:mm:ss
+          required: false
+          type: string
+        - name: publish-status
+          in: formData
+          description: live course publish status
+          required: false
+          type: integer
+          format: int32
+        - name: is-recommand
+          in: formData
+          description: live course is recommand
+          required: false
+          type: integer
+          format: int32
+        - name: is-replay
+          in: formData
+          description: live course is replay
+          required: false
+          type: integer
+          format: int32
+        - name: user-id
+          in: formData
+          description: user who own the course
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 'delete a live course'
+      description: 'delete a live course'
+      parameters:
+        - name: course-id
+          in: path
+          description: course id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 'get a live course info'
+      description: 'get a live course info'
+      parameters:
+        - name: course-id
+          in: path
+          description: course id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/live-course-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /live-courses:
+    post:
+      tags:
+        - course
+      summary: 'add a live course'
+      description: 'add a live course'
+      parameters:
+        - name: course-id
+          in: formData
+          description: live course id
+          required: true
+          type: string
+        - name: course-name
+          in: formData
+          description: live course name
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: live course description
+          required: false
+          type: string
+        - name: start-time
+          in: formData
+          description: live course start time,format:yyyy-MM-dd HH:mm:ss
+          required: true
+          type: string
+        - name: end-time
+          in: formData
+          description: live course end time,format:yyyy-MM-dd HH:mm:ss
+          required: true
+          type: string
+        - name: publish-status
+          in: formData
+          description: live course publish status
+          required: false
+          type: integer
+          format: int32
+        - name: user-id
+          in: formData
+          description: user who own the course
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 'query live course list'
+      description: 'query live course list'
+      parameters:
+        - name: filter
+          in: query
+          description: 'live course filter,may be course name, teacher name ect'
+          required: false
+          type: string
+        - name: live-status
+          in: query
+          description: 直播状态 0：未直播 1：正在直播 2：直播结束
+          required: false
+          type: integer
+          format: int32
+        - name: is-recommand
+          in: query
+          description: 是否推荐 0：不推荐 1：推荐
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: 'sort field, support create-time|view-count|score'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: start index
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: record count per page
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/live-course-info'
+          headers:
+            X-total-count:
+              description: The total count of live courses
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+
+  /course-periods/{period-id}:
+    put:
+      tags:
+        - course
+      summary: 'modify a course period'
+      description: 'modify a course period'
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: period-id
+          in: path
+          description: period id
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: period name
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 'delete a course period'
+      description: 'delete a course period'
+      parameters:
+        - name: period-id
+          in: path
+          description: period id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 'get period info'
+      description: 'get period info'
+      parameters:
+        - name: period-id
+          in: path
+          description: period id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/period-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /course-periods:
+    post:
+      tags:
+        - course
+      summary: '添加一个课时或章'
+      description: '添加一个课时或章'
+      parameters:
+        - name: course-id
+          in: formData
+          description: course id
+          required: true
+          type: string
+        - name: period-id
+          in: formData
+          description: period id
+          required: true
+          type: string
+        - name: period-name
+          in: formData
+          description: period name
+          required: true
+          type: string
+        - name: type
+          in: formData
+          description: period type, 0:节 1：章
+          required: true
+          type: integer
+          format: int32
+        - name: parent-id
+          in: formData
+          description: 父ID，节的父ID是章的ID，章的父ID是课程ID，节的父ID也可以是课程ID
+          required: true
+          type: string
+        - name: index
+          in: formData
+          description: 排列顺序，比如一个章下有多个节，多个节的排列顺序。注意排序顺序是同级下的，不是整个树的顺序
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 'query course period list'
+      description: 'query course period list'
+      parameters:
+        - name: course-id
+          in: query
+          description: course id
+          required: true
+          type: string
+        - name: type
+          in: query
+          description: course type
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/period-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /course-periods/key-points/{id}:
+    put:
+      tags:
+        - course
+      summary: 修改一个知识点信息
+      description: 修改一个知识点信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: 知识点ID
+          required: true
+          type: string
+        - name: content
+          in: formData
+          description: 知识点描述
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 删除一个知识点信息
+      description: 删除一个知识点信息
+      parameters:
+        - name: id
+          in: path
+          description: 知识点ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 获取一个知识点的信息
+      description: 获取一个知识点的信息
+      parameters:
+        - name: id
+          in: path
+          description: 知识点ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/key-point'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /course-periods/key-points:
+    get:
+      tags:
+        - course
+      summary: 查询节次下的知识点列表
+      description: 查询节次下的知识点列表
+      parameters:
+        - name: period-id
+          in: query
+          description: period id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/key-point'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+    post:
+      tags:
+        - course
+      summary: 增加一个知识点（考虑图片信息）
+      description: 增加一个知识点（考虑图片信息）
+      parameters:
+        - name: id
+          in: formData
+          description: key point id
+          required: true
+          type: string
+        - name: course-id
+          in: formData
+          description: course id
+          required: true
+          type: string
+        - name: period-id
+          in: formData
+          description: period id
+          required: true
+          type: string
+        - name: user-id
+          in: formData
+          description: user id
+          required: true
+          type: string
+        - name: time-point
+          in: formData
+          description: 知识点时间点，单位毫秒
+          required: true
+          type: integer
+          format: int64
+        - name: content
+          in: formData
+          description: 知识点描述
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /course-periods/resources:
+    get:
+      tags:
+        - course
+      summary: 查询节次下的文件资源列表
+      description: 查询节次下的文件资源列表
+      parameters:
+        - name: period-id
+          in: query
+          description: period id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resource-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /course-periods/resources/{resource-id}:
+    delete:
+      tags:
+        - course
+      summary: 为课程节次删除资源
+      description: 为课程节次删除资源
+      parameters:
+        - name: period-id
+          in: query
+          description: 节次id
+          required: true
+          type: string
+        - name: resource-id
+          in: path
+          description: 资源id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /resources/upload-path:
+    get:
+      tags:
+        - course
+      summary: 获取上传的文件在服务器端的存储路径，文件可能是录播机上传的，或者是人工上传的
+      description: 获取上传的文件在服务器端的存储路径，文件可能是录播机上传的，或者是人工上传的
+      parameters:
+        - name: file-name
+          in: query
+          description: 上传的文件名称
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /resources:
+    post:
+      tags:
+        - course
+      summary: 增加资源信息，可能是录播机上传的资源文件，也可能是人工上传的资源文件
+      description: 增加资源信息，可能是录播机上传的资源文件（为某个节次上传，或者是直播课上传，也可能是单纯的上传资源），也可能是人工上传的资源文件
+      parameters:
+        - name: fileInfos
+          in: body
+          description: file info
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/upload-file-info'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 'query resource list'
+      description: 'query resource list'
+      parameters:
+        - name: filter
+          in: query
+          description: 'course filter,may be name'
+          required: false
+          type: string
+        - name: sort
+          in: query
+          description: 'sort field, support create-time'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: start index
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: record count per page
+          required: true
+          type: integer
+          format: int32
+        - name: user-id
+          in: query
+          description: user whe own the resource
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/resource-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /courses/study-info/{course-id}:
+    get:
+      tags:
+        - course
+      summary: 获取某个用户对某课程的学习情况
+      description: 获取某个用户对某课程的学习情况，可以获得学习进度，上次学习位置
+      parameters:
+        - name: course-id
+          in: path
+          description: 课程ID
+          required: true
+          type: string
+        - name: course-type
+          in: query
+          description: 课程类型 0:点播课 1:直播课
+          required: true
+          type: integer
+          format: int32
+        - name: user-id
+          in: query
+          description: 用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/course-study-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /browse-records:
+    post:
+      tags:
+        - course
+      summary: 增加或者修改浏览记录
+      description: 首次浏览课程时增加一条包含视频长度的浏览记录，之后再浏览课程就只是更新课程浏览时间
+      parameters:
+        - name: user-id
+          in: formData
+          description: 用户ID
+          required: true
+          type: string
+        - name: course-id
+          in: formData
+          description: 课程名称，可能是点播或者直播课
+          required: true
+          type: string
+        - name: course-type
+          in: formData
+          description: 课程类型 0:点播课 1:直播课
+          required: true
+          type: integer
+          format: int32
+        - name: period-id
+          in: formData
+          description: 课时id
+          required: false
+          type: string
+        - name: duration
+          in: formData
+          description: 视频长度，单位是毫秒
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 查询浏览记录
+      description: 查询某个用户所有浏览记录，或者某个用户对某个课程的浏览记录
+      parameters:
+        - name: user-id
+          in: query
+          description: 用户id
+          required: true
+          type: string
+        - name: course-id
+          in: query
+          description: 课程id
+          required: false
+          type: string
+        - name: course-type
+          in: query
+          description: 课程类型 0:点播课 1:直播课
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/browse-record'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 删除浏览记录列表
+      description: 删除某个用户的浏览记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /browse-records/{id}:
+    put:
+      tags:
+        - course
+      summary: 修改一条浏览记录，视频资源有效
+      description: 关闭播放器时，更新浏览记录的当前播放时间
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: id
+          in: path
+          description: 浏览记录ID
+          required: true
+          type: string
+        - name: play-position
+          in: formData
+          description: 当前播放位置，单位是毫秒
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+    delete:
+      tags:
+        - course
+      summary: 删除某条浏览记录
+      description: 删除某条浏览记录
+      parameters:
+        - name: id
+          in: path
+          description: 浏览记录ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /favorites:
+    post:
+      tags:
+        - course
+      summary: 增加收藏
+      description: 增加收藏
+      parameters:
+        - name: user-id
+          in: formData
+          description: 收藏用户ID
+          required: true
+          type: string
+        - name: object-id
+          in: formData
+          description: 被收藏对象ID
+          required: true
+          type: string
+        - name: object-type
+          in: formData
+          description: 被收藏对象类型 0:课时 1:直播课
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 查询收藏记录列表
+      description: 查询收藏记录列表，通过用户、课程等过滤条件查询收藏记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 收藏用户id
+          required: false
+          type: string
+        - name: object-id
+          in: query
+          description: 被收藏对象ID
+          required: false
+          type: string
+        - name: object-type
+          in: query
+          description: 被收藏对象类型 0:课时 1:直播课
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/favorite-record'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 删除某个用户收藏记录列表
+      description: 删除某个用户收藏记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 收藏用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /favorites/{id}:
+    delete:
+      tags:
+        - course
+      summary: 删除某条收藏记录
+      description: 删除某条收藏记录
+      parameters:
+        - name: id
+          in: path
+          description: 收藏记录ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+ 
+            
+  /thumbups:
+    post:
+      tags:
+        - course
+      summary: 增加点赞
+      description: 增加点赞
+      parameters:
+        - name: user-id
+          in: formData
+          description: 点赞用户ID
+          required: true
+          type: string
+        - name: object-id
+          in: formData
+          description: 被点赞对象ID
+          required: true
+          type: string
+        - name: object-type
+          in: formData
+          description: 被点赞对象类型 0:课时 1:直播课
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - course
+      summary: 查询点赞记录列表
+      description: 查询点赞记录列表，通过用户、课程等过滤条件查询点赞记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 点赞用户id
+          required: false
+          type: string
+        - name: object-id
+          in: query
+          description: 被点赞对象ID
+          required: false
+          type: string
+        - name: object-type
+          in: query
+          description: 被点赞对象类型 0:课时 1:直播课
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/thumbup-record'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - course
+      summary: 删除某个用户点赞记录列表
+      description: 删除某个用户点赞记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 点赞用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /thumbups/{id}:
+    delete:
+      tags:
+        - course
+      summary: 删除某条点赞记录
+      description: 删除某条点赞记录
+      parameters:
+        - name: id
+          in: path
+          description: 点赞记录ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+
+  /users:
+    post:
+      tags:
+        - platform
+      summary: 增加用户
+      description: 增加用户
+      parameters:
+        - name: user-id
+          in: formData
+          description: 用户ID
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 用户名称
+          required: true
+          type: string
+        - name: password
+          in: formData
+          description: 用户密码
+          required: true
+          type: string
+        - name: adress
+          in: formData
+          description: 地址
+          required: false
+          type: string
+        - name: school-name
+          in: formData
+          description: 学校名称
+          required: false
+          type: string
+        - name: sex
+          in: formData
+          description: 性别 0:男 1:女
+          required: false
+          type: integer
+          format: int32
+        - name: title
+          in: formData
+          description: 用户头衔
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 用户描述
+          required: false
+          type: string
+        - name: tel
+          in: formData
+          description: 用户电话
+          required: false
+          type: string
+        - name: mail
+          in: formData
+          description: 用户邮箱
+          required: false
+          type: string
+        - name: icon
+          in: formData
+          description: 用户icon图片，用的base64编码的图片数据
+          required: false
+          type: string
+        - name: year
+          in: formData
+          description: 年份 老师是指工作年份，学生是指入学年份
+          required: false
+          type: string
+        - name: organization-ids
+          in: formData
+          description: 隶属机构ID,支持多个,用半角逗号","隔开
+          required: false
+          type: string
+        - name: class-ids
+          in: formData
+          description: 班级ID,老师或者学生所属班级，支持多个,用半角逗号","隔开
+          required: false
+          type: string
+        - name: role-ids
+          in: formData
+          description: 角色ID，用半角逗号","隔开
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询用户记录列表
+      description: 查询用户记录列表，分页的
+      parameters:
+        - name: name
+          in: query
+          description: 用名称过滤，支持模糊匹配
+          required: false
+          type: string
+        - name: sex
+          in: query
+          description: 性别 0:男 1:女
+          required: false
+          type: integer
+          format: int32
+        - name: status
+          in: query
+          description: 状态 0:正常 1:挂起
+          required: false
+          type: integer
+          format: int32
+        - name: user-id
+          in: query
+          description: 用户ID
+          required: false
+          type: string
+        - name: year
+          in: query
+          description: 年份 老师是指工作年份，学生是指入学年份
+          required: false
+          type: string
+        - name: tel
+          in: query
+          description: 用户电话
+          required: false
+          type: string
+        - name: organization-name
+          in: query
+          description: 隶属机构名称
+          required: false
+          type: string
+        - name: class-name
+          in: query
+          description: 班级名称
+          required: false
+          type: string
+        - name: class-id
+          in: query
+          description: 班级ID
+          required: false
+          type: string
+        - name: role-id
+          in: query
+          description: 角色ID
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页的数量
+          required: true
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: 排序字段，支持'name|title'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/user-info'
+          headers:
+            X-total-count:
+              description: 用户总数
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /users/{user-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取用户信息
+      description: 获取用户信息，包括角色和权限
+      parameters:
+        - name: user-id
+          in: path
+          description: 用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/user-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改一个用户信息
+      description: 修改一个用户信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: user-id
+          in: path
+          description: 用户id
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 用户名称
+          required: false
+          type: string
+        - name: password
+          in: formData
+          description: 用户密码
+          required: false
+          type: string
+        - name: sex
+          in: formData
+          description: 性别 0:男 1:女
+          required: false
+          type: integer
+          format: int32
+        - name: title
+          in: formData
+          description: 用户头衔
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 用户描述
+          required: false
+          type: string
+        - name: status
+          in: formData
+          description: 状态 0:正常 1:挂起
+          required: false
+          type: integer
+          format: int32 
+        - name: tel
+          in: formData
+          description: 用户电话
+          required: false
+          type: string
+        - name: mail
+          in: formData
+          description: 用户邮箱
+          required: false
+          type: string
+        - name: icon
+          in: formData
+          description: 用户icon图片，用的base64编码的图片数据
+          required: false
+          type: string
+        - name: year
+          in: formData
+          description: 年份 老师是指工作年份，学生是指入学年份
+          required: false
+          type: string
+        - name: organization-ids
+          in: formData
+          description: 隶属机构,支持多个,用半角逗号","隔开
+          required: false
+          type: string
+        - name: class-ids
+          in: formData
+          description: 班级,老师或者学生所属班级，支持多个,用半角逗号","隔开
+          required: false
+          type: string
+        - name: role-ids
+          in: formData
+          description: 用户角色信息，用半角逗号","隔开
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个用户
+      description: 删除一个用户
+      parameters:
+        - name: user-id
+          in: path
+          description: 用户id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /users/login:
+    post:
+      tags:
+        - platform
+      summary: 用户登录
+      description: 用户登录
+      parameters:
+        - name: user-id
+          in: formData
+          description: 用户ID
+          required: true
+          type: string
+        - name: password
+          in: formData
+          description: 用户密码
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+
+  /roles:
+    post:
+      tags:
+        - platform
+      summary: 增加角色
+      description: 增加角色
+      parameters:
+        - name: name
+          in: formData
+          description: 角色名称
+          required: true
+          type: string
+        - name: type
+          in: formData
+          description: 类型 0:普通 1:系统
+          required: true
+          type: integer
+          format: int32 
+        - name: description
+          in: formData
+          description: 角色描述
+          required: false
+          type: string
+        - name: privilege-ids
+          in: formData
+          description: 角色对应权限，支持多个,用半角逗号","隔开
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询角色列表
+      description: 查询角色列表，分页的
+      parameters:
+        - name: name
+          in: query
+          description: 用名称过滤，支持模糊匹配
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页的数量
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/role-info'
+          headers:
+            X-total-count:
+              description: 角色总数
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /roles/{role-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取角色信息
+      description: 获取角色信息，包括权限
+      parameters:
+        - name: role-id
+          in: path
+          description: 角色id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/role-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改一个角色信息
+      description: 修改一个角色信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: role-id
+          in: path
+          description: 角色id
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 角色名称
+          required: false
+          type: string
+        - name: type
+          in: formData
+          description: 类型 0:普通 1:系统
+          required: false
+          type: integer
+          format: int32 
+        - name: status
+          in: formData
+          description: 状态 0:正常 1:挂起
+          required: false
+          type: integer
+          format: int32 
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+        - name: privilege-ids
+          in: formData
+          description: 角色对应权限，支持多个,用半角逗号","隔开
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个角色
+      description: 删除一个角色
+      parameters:
+        - name: role-id
+          in: path
+          description: 角色id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+            
+  /classes:
+    post:
+      tags:
+        - platform
+      summary: 增加班级
+      description: 增加班级
+      parameters:
+        - name: class-id
+          in: formData
+          description: 班级ID
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 班级名称
+          required: true
+          type: string
+        - name: organization-id
+          in: formData
+          description: 组织机构ID
+          required: true
+          type: string
+        - name: grade
+          in: formData
+          description: 年级
+          required: false
+          type: string
+        - name: year
+          in: formData
+          description: 年份
+          required: false
+          type: string
+        - name: people-number
+          in: formData
+          description: 人数
+          required: false
+          type: integer
+          format: int32 
+        - name: class-teacher
+          in: formData
+          description: 班主任
+          required: false
+          type: string
+        - name: tel
+          in: formData
+          description: 电话
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询班级列表
+      description: 查询班级列表，分页的
+      parameters:
+        - name: class-id
+          in: query
+          description: 班级ID
+          required: false
+          type: string
+        - name: name
+          in: query
+          description: 用名称过滤，支持模糊匹配
+          required: false
+          type: string
+        - name: year
+          in: query
+          description: 年份
+          required: false
+          type: string
+        - name: organization-name
+          in: query
+          description: 机构名称
+          required: false
+          type: string
+        - name: class-teacher
+          in: query
+          description: 班主任
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: 状态
+          required: false
+          type: integer
+          format: int32
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页的数量
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/class-info'
+          headers:
+            X-total-count:
+              description: 班级总数
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /classes/{class-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取班级信息
+      description: 获取班级信息，包括班级学生信息和班级课程信息
+      parameters:
+        - name: class-id
+          in: path
+          description: 班级id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/class-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改一个班级信息
+      description: 修改一个班级信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: class-id
+          in: path
+          description: 班级id
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 班级名称
+          required: false
+          type: string
+        - name: organization-id
+          in: formData
+          description: 组织机构ID
+          required: false
+          type: string
+        - name: grade
+          in: formData
+          description: 年级
+          required: false
+          type: string
+        - name: year
+          in: formData
+          description: 年份
+          required: false
+          type: string
+        - name: people-number
+          in: formData
+          description: 人数
+          required: false
+          type: integer
+          format: int32 
+        - name: class-teacher
+          in: formData
+          description: 班主任
+          required: false
+          type: string
+        - name: tel
+          in: formData
+          description: 电话
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个班级
+      description: 删除一个班级
+      parameters:
+        - name: class-id
+          in: path
+          description: 班级id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /organizations:
+    post:
+      tags:
+        - platform
+      summary: 增加机构
+      description: 增加机构
+      parameters:
+        - name: name
+          in: formData
+          description: 机构名称
+          required: true
+          type: string
+        - name: level
+          in: formData
+          description: 级次
+          required: true
+          type: integer
+          format: int32 
+        - name: parent-id
+          in: formData
+          description: 父组织机构ID
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询机构详情
+      description: 查询机构详情
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/organization-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /organizations/{organization-id}:
+    put:
+      tags:
+        - platform
+      summary: 修改一个机构信息
+      description: 修改一个机构信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: organization-id
+          in: path
+          description: 组织机构ID
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 机构名称
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个机构
+      description: 删除一个机构，会删除该机构下所有子机构
+      parameters:
+        - name: organization-id
+          in: path
+          description: 组织机构id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /privileges:
+    get:
+      tags:
+        - platform
+      summary: 查询权限列表
+      description: 查询权限列表
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/privilege'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /school-infos:
+    post:
+      tags:
+        - platform
+      summary: 增加学校信息
+      description: 增加学校信息
+      parameters:
+        - name: school-id
+          in: formData
+          description: 学校编号
+          required: false
+          type: string
+        - name: name
+          in: formData
+          description: 学校名称
+          required: true
+          type: string
+        - name: link
+          in: formData
+          description: 学校链接
+          required: true
+          type: string
+        - name: type
+          in: formData
+          description: 学校类型
+          required: true
+          type: integer
+          format: int32 
+        - name: logo
+          in: formData
+          description: 学校LOGO图片，用的base64编码的图片数据
+          required: false
+          type: string
+        - name: manager
+          in: formData
+          description: 学校管理员
+          required: false
+          type: string
+        - name: tel
+          in: formData
+          description: 电话
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询学校信息
+      description: 查询学校信息
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/school-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /school-registers:
+    post:
+      tags:
+        - platform
+      summary: 增加学校注册
+      description: 增加学校注册
+      parameters:
+        - name: name
+          in: formData
+          description: 学校名称
+          required: true
+          type: string
+        - name: link
+          in: formData
+          description: 学校链接
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - platform
+      summary: 查询注册学校信息
+      description: 查询注册学校信息
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/school-register'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /school-registers/{register-id}:
+    put:
+      tags:
+        - platform
+      summary: 修改一个机构信息
+      description: 修改一个机构信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: register-id
+          in: path
+          description: 注册ID
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 学校名称
+          required: false
+          type: string
+        - name: link
+          in: formData
+          description: 学校链接
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个注册学校
+      description: 删除一个注册学校
+      parameters:
+        - name: register-id
+          in: path
+          description: 注册ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /record-devices:
+    get:
+      tags:
+        - platform
+      summary: 查询录播设备列表
+      description: 查询录播设备列表
+      parameters:
+        - name: device-id
+          in: query
+          description: 设备编号
+          required: false
+          type: string
+        - name: device-name
+          in: query
+          description: 设备名称
+          required: false
+          type: string
+        - name: room-name
+          in: query
+          description: 设备所在教室
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: 设备状态
+          required: false
+          type: integer
+          format: int32
+        - name: sort
+          in: query
+          description: '排序字段，支持按照设备编号排序，支持参数为 device-id'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页显示记录数
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/record-device'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    post:
+      tags:
+        - platform
+      summary: 添加录播设备记录
+      description: 添加录播设备记录
+      parameters:
+        - name: device-id
+          in: formData
+          description: 设备编号
+          required: true
+          type: string
+        - name: ip
+          in: formData
+          description: 设备IP
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 设备名称
+          required: true
+          type: string
+        - name: total-space
+          in: formData
+          description: 设备总空间
+          required: true
+          type: integer
+          format: int32
+        - name: version
+          in: formData
+          description: 设备规格型号
+          required: true
+          type: string
+        - name: room-id
+          in: formData
+          description: 教室id
+          required: true
+          type: string
+        - name: description
+          in: formData
+          description: 设备描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /record-devices/{device-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取录播设备信息
+      description: 获取录播设备信息
+      parameters:
+        - name: device-id
+          in: path
+          description: 录播设备id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/record-device'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改录播设备信息
+      description: 修改录播设备信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: device-id
+          in: path
+          description: 录播设备id
+          required: true
+          type: string
+        - name: ip
+          in: formData
+          description: 设备IP
+          required: false
+          type: string
+        - name: name
+          in: formData
+          description: 设备名称
+          required: false
+          type: string
+        - name: total-space
+          in: formData
+          description: 设备总空间
+          required: false
+          type: integer
+          format: int32
+        - name: available-space
+          in: formData
+          description: 设备可用空间
+          required: false
+          type: integer
+          format: int32
+        - name: version
+          in: formData
+          description: 设备规格型号
+          required: false
+          type: string
+        - name: status
+          in: formData
+          description: 设备状态
+          required: false
+          type: integer
+          format: int32
+        - name: room-id
+          in: formData
+          description: 教室id
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: 设备描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个录播设备
+      description: 删除一个录播设备
+      parameters:
+        - name: device-id
+          in: path
+          description: 录播设备id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /record-classrooms:
+    get:
+      tags:
+        - platform
+      summary: 查询录播教室列表
+      description: 查询录播教室列表
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/record-classroom'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    post:
+      tags:
+        - platform
+      summary: 添加录播教室记录
+      description: 添加录播教室记录
+      parameters:
+        - name: room-id
+          in: formData
+          description: 录播教室ID
+          required: false
+          type: string
+        - name: level
+          in: formData
+          description: 级次
+          required: true
+          type: integer
+          format: int32
+        - name: parent-id
+          in: formData
+          description: 父记录ID
+          required: false
+          type: string
+        - name: name
+          in: formData
+          description: 节点名称
+          required: true
+          type: string
+        - name: node-type
+          in: formData
+          description: 节点类型 0:非教室 1:教室
+          required: true
+          type: integer
+          format: int32
+        - name: room-type
+          in: formData
+          description: 教室类型 0:录播教室 1:阶梯教室
+          required: false
+          type: integer
+          format: int32
+        - name: seat-number
+          in: formData
+          description: 座位数
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /record-classrooms/{room-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取录播教室信息
+      description: 获取录播教室信息
+      parameters:
+        - name: room-id
+          in: path
+          description: 录播教室id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/record-classroom'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改录播教室信息
+      description: 修改录播教室信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:
+        - name: room-id
+          in: path
+          description: 录播教室id
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 节点名称
+          required: false
+          type: string
+        - name: room-type
+          in: formData
+          description: 教室类型 0:录播教室 1:阶梯教室
+          required: false
+          type: integer
+          format: int32
+        - name: seat-number
+          in: formData
+          description: 座位数
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个录播教室
+      description: 删除一个录播教室
+      parameters:
+        - name: room-id
+          in: path
+          description: 录播教室id
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+  /semesters:
+    get:
+      tags:
+        - platform
+      summary: 查询学期列表
+      description: 查询学期列表
+      parameters:
+        - name: sort
+          in: query
+          description: '排序字段，支持按照年份排序，支持参数为 year'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页显示记录数
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/semester-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    post:
+      tags:
+        - platform
+      summary: 添加学期记录
+      description: 添加学期记录
+      parameters:
+        - name: semester-id
+          in: formData
+          description: 学期编号
+          required: false
+          type: string
+        - name: name
+          in: formData
+          description: 名称
+          required: true
+          type: string
+        - name: year
+          in: formData
+          description: 年份
+          required: true
+          type: integer
+          format: int32
+        - name: start-date
+          in: formData
+          description: 开始日期,格式为yyyy-mm-dd
+          required: true
+          type: string
+        - name: end-date
+          in: formData
+          description: 结束日期,格式为yyyy-mm-dd
+          required: true
+          type: string
+        - name: week-number
+          in: formData
+          description: 周数
+          required: true
+          type: integer
+          format: int32
+        - name: is-current-semester
+          in: formData
+          description: 是否当前学期，0:不是 1:是
+          required: true
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /semesters/{semester-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取学期信息
+      description: 获取学期信息
+      parameters:
+        - name: semester-id
+          in: path
+          description: 学期编号
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/semester-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改学期信息
+      description: 修改学期信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:    
+        - name: semester-id
+          in: path
+          description: 学期编号
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 名称
+          required: false
+          type: string
+        - name: year
+          in: formData
+          description: 年份
+          required: false
+          type: integer
+          format: int32
+        - name: start-date
+          in: formData
+          description: 开始日期,格式为yyyy-mm-dd
+          required: false
+          type: string          
+        - name: end-date
+          in: formData
+          description: 结束日期,格式为yyyy-mm-dd
+          required: false
+          type: string
+        - name: week-number
+          in: formData
+          description: 周数
+          required: false
+          type: integer
+          format: int32
+        - name: is-current-semester
+          in: formData
+          description: 是否当前学期，0:不是 1:是
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个学期信息
+      description: 删除一个学期信息
+      parameters:
+        - name: semester-id
+          in: path
+          description: 学期编号
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'           
+            
+  /limited-words:
+    get:
+      tags:
+        - platform
+      summary: 查询受控词列表
+      description: 查询受控词列表
+      parameters:
+        - name: sort
+          in: query
+          description: '排序字段，支持按照受控词名称排序，支持参数为 name'
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/limited-word'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    post:
+      tags:
+        - platform
+      summary: 添加受控词记录
+      description: 添加受控词记录
+      parameters:
+        - name: name
+          in: formData
+          description: 受控词名称
+          required: true
+          type: string
+        - name: grade
+          in: formData
+          description: 级别 0:系统 1:用户
+          required: false
+          type: integer
+          format: int32
+        - name: length
+          in: formData
+          description: 受控词的最大长度
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /limited-words/{limited-word-id}:
+    get:
+      tags:
+        - platform
+      summary: 获取受控词相关信息
+      description: 获取受相关信息
+      parameters:
+        - name: limited-word-id
+          in: path
+          description: 受控词ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/limited-word'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改受控词信息
+      description: 修改受控词信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:    
+        - name: limited-word-id
+          in: path
+          description: 受控词ID
+          required: true
+          type: string
+        - name: name
+          in: formData
+          description: 受控词名称
+          required: false
+          type: string
+        - name: grade
+          in: formData
+          description: 级别 0:系统 1:用户
+          required: false
+          type: integer
+          format: int32
+        - name: length
+          in: formData
+          description: 受控词的最大长度
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个受控词信息
+      description: 删除一个受控词信息
+      parameters:
+        - name: limited-word-id
+          in: path
+          description: 受控词ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'     
+
+  /word-items:
+    get:
+      tags:
+        - platform
+      summary: 查询受控词条目列表
+      description: 查询受控词条目列表
+      parameters:
+        - name: limited-word-id
+          in: query
+          description: 受控词ID
+          required: false
+          type: string
+        - name: sort
+          in: query
+          description: '排序字段，支持按照受控词名称排序，支持参数为 limited-word-name'
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          type: integer
+          required: true
+          format: int32
+        - name: count
+          in: query
+          description: 每页显示记录数
+          required: true
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/word-item'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    post:
+      tags:
+        - platform
+      summary: 添加受控词条目记录
+      description: 添加受控词条目记录
+      parameters:
+        - name: limited-word-id
+          in: formData
+          description: 受控词ID
+          required: true
+          type: string
+        - name: limited-word-name
+          in: formData
+          description: 受控词名称
+          required: true
+          type: string
+        - name: word
+          in: formData
+          description: 受控词值
+          required: true
+          type: string
+        - name: is-have-sublevel
+          in: formData
+          description: 是否有子级 0:没有 1:有
+          required: true
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /word-items/{id}:
+    get:
+      tags:
+        - platform
+      summary: 获取受控词条目信息
+      description: 获取受控词条目信息
+      parameters:
+        - name: id
+          in: path
+          description: 受控词条目ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/word-item'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - platform
+      summary: 修改受控词信息
+      description: 修改受控词信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:    
+        - name: id
+          in: path
+          description: 受控词条目ID
+          required: true
+          type: string
+        - name: index
+          in: formData
+          description: 受控词序号
+          required: false
+          type: integer
+          format: int32
+        - name: word
+          in: formData
+          description: 受控词值
+          required: false
+          type: string
+        - name: is-have-sublevel
+          in: formData
+          description: 是否有子级 0:没有 1:有
+          required: false
+          type: integer
+          format: int32
+        - name: status
+          in: formData
+          description: 状态 0:正常 1:挂起
+          required: false
+          type: integer
+          format: int32
+        - name: description
+          in: formData
+          description: 描述
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - platform
+      summary: 删除一个受控词条目信息
+      description: 删除一个受控词条目信息
+      parameters:
+        - name: id
+          in: path
+          description: 受控词条目ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'              
+
+  /activities/isRegister:
+    get:
+      tags:
+        - evaluation
+      summary: 是否可以报名评审活动
+      description: 是否可以报名评审活动
+      parameters:
+        - name: activity-id
+          in: query
+          description: 评课活动ID
+          required: true
+          type: string
+        - name: group-id
+          in: query
+          description: 组别
+          required: false
+          type: string
+        - name: user-id
+          in: query
+          description: 作者ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'  
+            
+  /productions/file:
+    post:
+      tags:
+        - evaluation
+      summary: 上传文件
+      description: 上传文件
+      parameters:
+        - name: file
+          in: formData
+          description: 文件内容
+          required: true
+          type: file
+      responses:
+        '200':
+          description: OK
+          schema:
+             title: file-path
+             type: string
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+            
+    delete:
+      tags:
+        - evaluation
+      summary: 删除文件
+      description: 删除文件
+      parameters:
+        - name: file-path
+          in: query
+          description: 文件路径(调用上传文件接口时返回的值)
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+  
+  /productions:
+    get:
+      tags:
+        - evaluation
+      summary: 查询作品列表
+      description: 查询作品列表
+      parameters:
+        - name: filter
+          in: query
+          description: 作品过滤条件，可能是作品名称或者作者名
+          required: false
+          type: string
+        - name: activity-id
+          in: query
+          description: 评课活动ID
+          required: false
+          type: string
+        - name: group-id
+          in: query
+          description: 组别
+          required: false
+          type: string
+        - name: address
+          in: query
+          description: 地址
+          required: false
+          type: string
+        - name: status
+          in: query
+          description: 作品状态
+          required: false
+          type: integer
+          format: int32  
+        - name: sort
+          in: query
+          description: 排序字段，如vote-number、view-count、created
+          required: false
+          type: string
+        - name: start
+          in: query
+          description: 开始的记录序号，0开始
+          required: false
+          type: integer
+          format: int32
+        - name: count
+          in: query
+          description: 每页显示记录数
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/production'
+          headers:
+            X-total-count:
+              description: 作品总数
+              type: integer
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+         
+    post:
+      tags:
+        - evaluation
+      summary: 添加作品记录
+      description: 添加作品记录
+      parameters:
+        - name: name
+          in: formData
+          description: 作品名称
+          required: true
+          type: string
+        - name: brief
+          in: formData
+          description: 作品简介
+          required: false
+          type: string
+        - name: user-id
+          in: formData
+          description: 作者ID
+          required: true
+          type: string
+        - name: user-name
+          in: formData
+          description: 作者名
+          required: true
+          type: string
+        - name: activity-id
+          in: formData
+          description: 活动ID
+          required: false
+          type: string
+        - name: group-id
+          in: formData
+          description: 组别ID
+          required: false
+          type: string
+        - name: group-name
+          in: formData
+          description: 组别名称
+          required: false
+          type: string
+        - name: file-path
+          in: formData
+          description: 文件路径(调用上传文件接口时返回的值)
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /productions/{production-id}:
+    get:
+      tags:
+        - evaluation
+      summary: 获取作品信息
+      description: 获取作品信息
+      parameters:
+        - name: production-id
+          in: path
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/production'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    put:
+      tags:
+        - evaluation
+      summary: 修改作品信息
+      description: 修改作品信息
+      consumes:
+       - application/x-www-form-urlencoded
+      parameters:    
+        - name: production-id
+          in: path
+          description: 作品ID
+          required: true
+          type: string
+        - name: resource-id
+          in: formData
+          description: 资源ID
+          required: false
+          type: string
+        - name: award-id
+          in: formData
+          description: 奖品ID
+          required: false
+          type: string
+        - name: rank
+          in: formData
+          description: 作品排名
+          required: false
+          type: string
+        - name: total-score
+          in: formData
+          description: 作品总分
+          required: false
+          type: number
+          format: double
+        - name: review-score
+          in: formData
+          description: 评审得分
+          required: false
+          type: number
+          format: double
+        - name: vote-score
+          in: formData
+          description: 投票得分
+          required: false
+          type: number
+          format: double
+        - name: vote-number
+          in: formData
+          description: 投票数
+          required: false
+          type: integer
+          format: int32
+        - name: view-count
+          in: formData
+          description: 浏览数
+          required: false
+          type: integer
+          format: int32
+        - name: status
+          in: formData
+          description: 状态 0:未审核 1:审核
+          required: false
+          type: integer
+          format: int32
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    delete:
+      tags:
+        - evaluation
+      summary: 删除一个作品信息
+      description: 删除一个作品信息
+      parameters:
+        - name: production-id
+          in: path
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+            
+  /productions/votes:
+    post:
+      tags:
+        - evaluation
+      summary: 增加投票
+      description: 增加投票
+      parameters:
+        - name: user-id
+          in: formData
+          description: 投票用户ID
+          required: false
+          type: string
+        - name: wechat-id
+          in: formData
+          description: 微信号
+          required: false
+          type: string
+        - name: phone-number
+          in: formData
+          description: 手机号
+          required: false
+          type: string
+        - name: production-id
+          in: formData
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+    get:
+      tags:
+        - evaluation
+      summary: 查询投票记录列表
+      description: 查询投票记录列表
+      parameters:
+        - name: user-id
+          in: query
+          description: 投票用户id
+          required: false
+          type: string
+        - name: wechat-id
+          in: query
+          description: 微信号
+          required: false
+          type: string
+        - name: phone-number
+          in: query
+          description: 手机号
+          required: false
+          type: string
+        - name: production-id
+          in: query
+          description: 作品ID
+          required: false
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/evaluation-vote'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+  /productions/votes/{vote-id}:
+    delete:
+      tags:
+        - evaluation
+      summary: 删除某条投票记录
+      description: 删除某条投票记录
+      parameters:
+        - name: vote-id
+          in: path
+          description: 投票记录ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'            
+            
+definitions:
+  course-info:
+    type: object
+    description: course info
+    properties:
+      course-id:
+        type: string
+        description: 课程ID
+      name:
+        type: string
+        description: 课程名称
+      type:
+        type: integer
+        format: int32
+        description: 课程类型 0：精品课 1：班级课
+      description:
+        type: string
+        description: 课程描述
+      outline:
+        type: string
+        description: 课程大纲
+      created:
+        type: string
+        description: 创建时间
+      subject:
+        type: string
+        description: 课程学科
+      grade:
+        type: string
+        description: 年级
+      icon-resource-id:
+        type: string
+        description: 肖像资源ID
+      icon-file:
+        type: string
+        description: 肖像路径
+      last-modify:
+        type: string
+        description: 最后修改时间
+      thumbup-count:
+        type: integer
+        format: int32
+        description: 点赞数
+      comment-count:
+        type: integer
+        format: int32
+        description: 评论数
+      view-count:
+        type: integer
+        format: int32
+        description: 浏览次数
+      score:
+        type: number
+        format: double
+        description: 评分
+      publish-status:
+        type: integer
+        format: int32
+        description: 发布状态 0：不发布 1：发布
+      is-recommand:
+        type: integer
+        format: int32
+        description: 是否推荐 0：不推荐 1：推荐
+      is-mount-resource:
+        type: integer
+        format: int32
+        description: 是否挂载资源 0：不挂载 1：挂载
+      user-id:
+        type: string
+        description: 拥有者
+
+  period-info:
+    type: object
+    description: period info
+    properties:
+      period-id:
+        type: string
+        description: 课时id
+      type:
+        type: integer
+        format: int32
+        description: 课时类型 0：章 1：节
+      name:
+        type: string
+        description: 课时名称
+      course-id:
+        type: string
+        description: 课程id
+      parent-id:
+        type: string
+        description: 父id
+      created:
+        type: string
+        description: 课时创建时间
+      duration:
+        type: string
+        description: 课时时常,格式为：hh:mm:ss
+      key-points:
+        type: array
+        items:
+          $ref: '#/definitions/key-point'
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/resource-info'
+
+  resource-info:
+    type: object
+    description: resource info
+    properties:
+      resource-id:
+        type: string
+        description: 资源ID
+      is-main:
+        type: integer
+        format: int32
+        description: 是否主视频资源, 系统可以根据这个值进行特殊处理 0:是 1：不是
+      resource-file-type:
+        type: integer
+        format: int32
+        description: 资源文件类型,0 video, 1 image, 2 document
+      resource-style:
+        type: integer
+        format: int32
+        description: 资源来源,0 录制上传,1 手动上传
+      name:
+        type: string
+        description: 资源名称
+      created:
+        type: string
+        description: 创建时间
+      duration:
+        type: string
+        description: 视频文件时长, hh:mm:ss
+      files:
+        type: array
+        items:
+          $ref: '#/definitions/resource-file'
+
+  resource-file:
+    type: object
+    description: infomation of resource file
+    properties:
+      file-id:
+        type: string
+        description: 文件ID
+      file-type:
+        type: integer
+        format: int32
+        description: 文件类型,0 video, 1 image, 2 document，3，vtt subtitle
+      name:
+        type: string
+        description: 文件名(不包含路径)
+      path:
+        type: string
+        description: 文件路径
+      created:
+        type: string
+        description: 创建时间
+      duration:
+        type: string
+        description: 视频文件时长, hh:mm:ss
+
+  live-course-info:
+    type: object
+    description: live course info
+    properties:
+      course-id:
+        type: string
+        description: 直播课程ID
+      name:
+        type: string
+        description: 直播课程名称
+      description:
+        type: string
+        description: 课程描述
+      created:
+        type: string
+        description: 创建时间
+      thumbup-count:
+        type: integer
+        format: int32
+        description: 点赞数
+      comment-count:
+        type: integer
+        format: int32
+        description: 评论数
+      view-count:
+        type: integer
+        format: int32
+        description: 浏览数
+      score:
+        type: number
+        format: double
+        description: 评分
+      publish-status:
+        type: integer
+        format: int32
+        description: 发布状态 0：不发布 1：发布
+      is-recommand:
+        type: integer
+        format: int32
+        description: 是否推荐 0：不推荐 1：推荐
+      is-replay:
+        type: integer
+        format: int32
+        description: 是否支持回放 0：不支持 1：支持
+      user-id:
+        type: string
+        description: 拥有者
+      start-time:
+        type: string
+        description: 直播开始时间
+      end-time:
+        type: string
+        description: 直播结束时间
+      live-address:
+        type: string
+        description: 直播地址
+      live-status:
+        type: integer
+        format: int32
+        description: 直播状态 0：未直播 1：正在直播 2：直播结束
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/resource-info'
+
+  record-reserve-info:
+    type: object
+    description: record reserve info used by record machine
+    properties:
+      reserve-id:
+        type: string
+        description: 预约ID
+      name:
+        type: string
+        description: 预约名称
+      room-id:
+        type: string
+        description: 预约教室ID
+      room-name:
+        type: string
+        description: 预约教室名称
+      start-time:
+        type: string
+        description: 预约开始时间
+      end-time:
+        type: string
+        description: 预约结束时间
+      created:
+        type: string
+        description: 预约产生时间
+      course-id:
+        type: string
+        description: 课程ID
+      period-id:
+        type: string
+        description: 课时ID
+      live-course-id:
+        type: string
+        description: 直播课ID
+      status:
+        type: integer
+        format: int32
+        description: 申请状态 0:申请未审核 1:申请已审核
+      is-live:
+        type: integer
+        format: int32
+        description: 是否直播 0:不直播 1:直播
+      live-address:
+        type: string
+        description: 直播地址
+      is-record-file:
+        type: integer
+        format: int32
+        description: 是否录制文件 0:不录制 1:录制
+      is-auto-publish:
+        type: integer
+        format: int32
+        description: 是否自动发布 0:不自动发布 1:自动发布
+      record-mode:
+        type: integer
+        format: int32
+        description: 录制模式，0电影模式，1资源模式，2电影加资源模式
+      file-path:
+        type: string
+        description: 文件上传路径
+      reserve-user-id:
+        type: string
+        description: 预约用户ID
+      reserve-user-name:
+        type: string
+        description: 预约用户名
+      description:
+        type: string
+        description: 描述
+
+  upload-file-info:
+    type: object
+    description: 资源的文件信息，可能是录播机上传的文件，或者是人工上传的文件
+    properties:
+      live-course-id:
+        type: string
+        description: 资源属于的直播课程ID，可选
+      course-id:
+        type: string
+        description: 资源属于的课程ID，可选
+      period-id:
+        type: string
+        description: 资源属于的课时ID，可选
+      is-auto-publish:
+        type: integer
+        format: int32
+        description: 课程是否自动发布，0，不自动发布，1自动发布，可选
+      resource-style:
+        type: integer
+        format: int32
+        description: 课程文件来源，0，录播机，1上传
+      user-id:
+        type: string
+        description: 资源所属的用户id，人工上传的时候需要填
+      file-name:
+        type: string
+        description: 文件名称，不包含路径
+      file-path:
+        type: string
+        description: 文件存储路径
+      name:
+        type: string
+        description: 资源名
+      markpoints:
+        type: array
+        items:
+          $ref: '#/definitions/keypoint-basicinfo'
+
+  keypoint-basicinfo:
+    type: object
+    description: 知识点信息
+    properties:
+      time-point:
+        type: integer
+        format: int64
+        description: 知识点时间点，单位毫秒
+      content:
+        type: string
+        description: 知识点描述
+
+  record-device:
+    type: object
+    description: 录播设备信息
+    properties:
+      device-id:
+        type: string
+        description: 设备ID
+      ip:
+        type: string
+        description: 设备IP
+      name:
+        type: string
+        description: 设备名称
+      total-space:
+        type: integer
+        format: int32
+        description: 设备总空间
+      available-space:
+        type: integer
+        format: int32
+        description: 设备可用空间
+      version:
+        type: string
+        description: 设备规格型号
+      status:
+        type: integer
+        format: int32
+        description: 设备状态
+      description:
+        type: string
+        description: 设备描述
+      room-id:
+        type: string
+        description: 录播教室ID
+      room-name:
+        type: string
+        description: 设备所在教室名称
+
+  record-classroom:
+    type: object
+    description: 录播教室
+    properties:
+      room-id:
+        type: string
+        description: 录播教室ID
+      level:
+        type: integer
+        format: int32
+        description: 级次
+      parent-id:
+        type: string
+        description: 父记录ID
+      name:
+        type: string
+        description: 节点名称
+      node-type:
+        type: integer
+        format: int32
+        description: 节点类型
+      room-type:
+        type: integer
+        format: int32
+        description: 教室类型
+      seat-number:
+        type: integer
+        format: int32
+        description: 座位数
+      description:
+        type: string
+        description: 描述
+
+  key-point:
+    type: object
+    description: 知识点信息
+    properties:
+      id:
+        type: string
+        description: 知识点ID
+      course-id:
+        type: string
+        description: 课程ID
+      period-id:
+        type: string
+        description: 课时ID
+      user-id:
+        type: string
+        description: 用户ID
+      time-point:
+        type: integer
+        format: int64
+        description: 知识点时间点，单位毫秒
+      content:
+        type: string
+        description: 知识点描述
+
+  browse-record:
+    type: object
+    description: 课程浏览记录
+    properties:
+      id:
+        type: string
+        description: 浏览记录ID
+      user-id:
+        type: string
+        description: 用户ID
+      course-id:
+        type: string
+        description: 课程ID
+      period-id:
+        type: string
+        description: 课时ID
+      course-type:
+        type: integer
+        format: int32
+        description: 课程类型 0:点播课 1:直播课
+      view-time:
+        type: string
+        description: 浏览时间
+      play-position:
+        type: integer
+        format: int32
+        description: 上次播放时间，单位秒
+      duration:
+        type: integer
+        format: int32
+        description: 视频时长，单位秒
+
+  course-study-info:
+    type: object
+    description: 课程学习进度信息
+    properties:
+      course-id:
+        type: string
+        description: 课程ID
+      current-period-id:
+        type: string
+        description: 当前学习到的课时ID
+      current-position:
+        type: integer
+        format: int32
+        description: 当前学习到的视频时间点（秒）
+      finished-period-count:
+        type: integer
+        format: int32
+        description: 学完的课程数量
+      total-period-count:
+        type: integer
+        format: int32
+        description: 所有的课程数量
+
+  thumbup-record:
+    type: object
+    description: 点赞记录
+    properties:
+      id:
+        type: string
+        description: ID
+      user-id:
+        type: string
+        description: 点赞用户ID
+      object-id:
+        type: string
+        description: 被点赞对象ID
+      object-type:
+        type: integer
+        format: int32
+        description: 被点赞对象类型 0:课时 1:直播课
+        
+  favorite-record:
+    type: object
+    description: 收藏记录
+    properties:
+      id:
+        type: string
+        description: ID
+      user-id:
+        type: string
+        description: 收藏用户ID
+      object-id:
+        type: string
+        description: 被收藏对象ID
+      object-type:
+        type: integer
+        format: int32
+        description: 被收藏对象类型 0:课时 1:直播课        
+
+  user-info:
+    type: object
+    description: 用户信息
+    properties:
+      user-id:
+        type: string
+        description: 用户ID
+      name:
+        type: string
+        description: 用户名称
+      password:
+        type: string
+        description: 密码
+      address:
+        type: string
+        description: 地址
+      school-name:
+        type: string
+        description: 学校名称
+      sex:
+        type: integer
+        format: int32
+        description: 性别 0:男 1:女    
+      title:
+        type: string
+        description: 头衔
+      description:
+        type: string
+        description: 用户描述
+      status:
+        type: integer
+        format: int32
+        description: 状态 0:正常 1:挂起 
+      tel:
+        type: string
+        description: 电话号码
+      mail:
+        type: string
+        description: 邮箱
+      icon:
+        type: string
+        description: 肖像图片的base64编码的字符串
+      year:
+        type: string
+        description: 年份
+      organization-infos:
+        type: array
+        items:
+          $ref: '#/definitions/organization-info'
+      class-infos:
+        type: array
+        items:
+          $ref: '#/definitions/class-info'
+      role-infos:
+        type: array
+        items:
+          $ref: '#/definitions/role-info'
+      privileges:
+        type: array
+        items:
+          $ref: '#/definitions/privilege'
+          
+  class-info:
+    type: object
+    description: 角色信息
+    properties:
+      class-id:
+        type: string
+        description: 班级ID
+      class-name:
+        type: string
+        description: 班级名称
+      organization-id:
+        type: string
+        description: 组织机构ID
+      organization-name:
+        type: string
+        description: 组织机构名称
+      grade:
+        type: string
+        description: 年级
+      year:
+        type: string
+        description: 年份
+      people-number:
+        type: integer
+        format: int32
+        description: 班级人数
+      class-teacher:
+        type: string
+        description: 班主任
+      tel:
+        type: string
+        description: 电话
+      status:
+        type: integer
+        format: int32
+        description: 状态
+      description:
+        type: string
+        description: 描述
+        
+  organization-info:
+    type: object
+    description: 机构信息
+    properties:
+      organization-id:
+        type: string
+        description: 组织机构ID
+      name:
+        type: string
+        description: 组织机构名称
+      level:
+        type: integer
+        format: int32
+        description: 本层的层级 根为0，以后依次加1
+      parent-id:
+        type: string
+        description: 父组织机构ID
+      description:
+        type: string
+        description: 描述
+        
+  role-info:
+    type: object
+    description: 角色信息
+    properties:
+      role-id:
+        type: string
+        description: 角色ID
+      name:
+        type: string
+        description: 角色名称
+      type:
+        type: integer
+        format: int32
+        description: 0 普通, 1 系统
+      status:
+        type: integer
+        format: int32
+        description: 0 正常, 1 挂起
+      description:
+        type: string
+        description: 描述
+      privileges:
+        type: array
+        items:
+          $ref: '#/definitions/privilege'
+          
+  privilege:
+    type: object
+    description: 权限信息
+    properties:
+      privilege-id:
+        type: string
+        description: 权限ID
+      name:
+        type: string
+        description: 权限名称
+      description:
+        type: string
+        description: 描述
+      type:
+        type: integer
+        format: int32
+        description: 0 应用级权限, 1 功能级权限
+      parent-id:
+        type: string
+        description: 父权限ID，功能级权限有父权限，是应用级权限。应用级权限没有父权限
+        
+  school-info:
+    type: object
+    description: 学校信息
+    properties:
+      school-id:
+        type: string
+        description: 学校编号
+      name:
+        type: string
+        description: 学校名称
+      link:
+        type: string
+        description: 学校链接
+      type:
+        type: integer
+        format: int32
+        description: 学校类型
+      logo:
+        type: string
+        description: 学校LOGO图片的base64编码的字符串
+      manager:
+        type: string
+        description: 学校管理员
+      tel:
+        type: string
+        description: 电话
+      description:
+        type: string
+        description: 描述
+        
+  school-register:
+    type: object
+    description: 学校注册信息
+    properties:
+      register-id:
+        type: string
+        description: 注册ID
+      name:
+        type: string
+        description: 学校名称
+      link:
+        type: string
+        description: 学校链接
+      description:
+        type: string
+        description: 描述
+        
+  semester-info:
+    type: object
+    description: 学期信息
+    properties:
+      semester-id:
+        type: string
+        description: 学期编号
+      name:
+        type: string
+        description: 学期名称
+      year:
+        type: integer
+        format: int32
+        description: 年份
+      start-date:
+        type: string
+        description: 开始日期
+      end-date:
+        type: string
+        description: 结束日期
+      week-number:
+        type: integer
+        format: int32
+        description: 周数
+      is-current-semester:
+        type: integer
+        format: int32
+        description: 是否当前学期，0:不是 1:是
+      description:
+        type: string
+        description: 描述
+        
+  limited-word:
+    type: object
+    description: 受控词信息
+    properties:
+      limited-word-id:
+        type: string
+        description: 受控词ID 
+      name:
+        type: string
+        description: 受控词名称
+      grade:
+        type: integer
+        format: int32
+        description: 级别 0:系统 1:用户
+      length:
+        type: integer
+        format: int32
+        description: 受控词最大长度
+      description:
+        type: string
+        description: 描述     
+        
+  word-item:
+    type: object
+    description: 受控词条目信息
+    properties:
+      id:
+        type: string
+        description: 受控词条目ID 
+      limited-word-id:
+        type: string
+        description: 受控词ID 
+      limited-word-name:
+        type: string
+        description: 受控词名称
+      index:
+        type: integer
+        format: int32
+        description: 受控词序号
+      word:
+        type: string
+        description: 受控词值
+      code:
+        type: string
+        description: 过滤值
+      is-have-sublevel:
+        type: integer
+        format: int32
+        description: 是否有子级 0:没有 1:有
+      status:
+        type: integer
+        format: int32
+        description: 状态 0:正常 1:挂起        
+      description:
+        type: string
+        description: 描述     
+        
+  production:
+    type: object
+    description: 作品信息
+    properties:
+      production-id:
+        type: string
+        description: 作品ID 
+      name:
+        type: string
+        description: 作品名称 
+      brief:
+        type: string
+        description: 作品简介
+      resource-id:
+        type: string
+        description: 资源ID资源ID
+      user-id:
+        type: string
+        description: 作者ID
+      user-name:
+        type: string
+        description: 作者名
+      activity-id:
+        type: string
+        description: 活动ID
+      group-name:
+        type: string
+        description: 组别名称
+      group-id:
+        type: string
+        description: 组别ID
+      award-id:
+        type: string
+        description: 获奖ID         
+      rank:
+        type: integer
+        format: int32
+        description: 作品排名
+      total-score:
+        type: number
+        format: double
+        description: 作品总分
+      review-score:
+        type: number
+        format: double
+        description: 评审得分 
+      vote-score:
+        type: number
+        format: double
+        description: 投票得分          
+      vote-number:
+        type: integer
+        format: int32
+        description: 投票数
+      view-count:
+        type: integer
+        format: int32
+        description: 浏览数
+      status:
+        type: integer
+        format: int32
+        description: 状态 0:未审核 1:审核
+      created:
+        type: string
+        description: 创建时间
+      resources:
+        type: array
+        items:
+          $ref: '#/definitions/resource-info'        
+        
+  evaluation-vote:
+    type: object
+    description: 评课投票信息
+    properties:
+      vote-id:
+        type: string
+        description: 投票ID
+      production-id:
+        type: string
+        description: 作品ID
+      user-id:
+        type: string
+        description: 用户ID
+      wechat-id:
+        type: string
+        description: 微信ID
+      phone-number:
+        type: string
+        description: 手机号
+      created:
+        type: string
+        description: 创建时间
+
+  upload-resource-info:
+    type: object
+    description: 上传资源信息
+    properties:
+      user-id:
+        type: string
+        description: 用户ID
+      resource-name:
+        type: string
+        description: 资源名称
+      file-name:
+        type: string
+        description: 资源文件名称，不包含路径
+      file-path:
+        type: string
+        description: 资源文件路径
+      resource-style:
+        type: integer
+        format: int32
+        description: 资源来源,0 录播机 ,1 本地上传 2 优课制作 3 微课制作
+        
+  error-info:
+    type: object
+    description: error info
+    properties:
+      error-code:
+        type: integer
+        format: int32
+        description: error code
+      error-info:
+        type: string
+        description: error information
+      tag:
+        type: string
+        description: related error info

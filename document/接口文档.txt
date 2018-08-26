@@ -1,0 +1,133 @@
+1.作品接口（输入参数：作品ID;返回作品详细信息）
+	/productions/{production-id}:
+    get:
+      tags:
+        - evaluation
+      summary: 获取作品信息
+      description: 获取作品信息
+      parameters:
+        - name: production-id
+          in: path
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/production'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+2.投票接口（输入参数：作品ID和微信ID;返回投票成功或重复投票）
+
+	 /productions/votes:
+    post:
+      tags:
+        - evaluation
+      summary: 增加投票
+      description: 增加投票
+      parameters:
+        - name: user-id
+          in: formData
+          description: 投票用户ID
+          required: false
+          type: string
+        - name: wechat-id
+          in: formData
+          description: 微信号
+          required: false
+          type: string
+        - name: phone-number
+          in: formData
+          description: 手机号
+          required: false
+          type: string
+        - name: production-id
+          in: formData
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/error-info'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+3.作品列表接口（输入参数：活动ID;返回活动已报名作品作品信息）
+
+/productions/{production-id}:
+    get:
+      tags:
+        - evaluation
+      summary: 获取作品信息
+      description: 获取作品信息
+      parameters:
+        - name: production-id
+          in: path
+          description: 作品ID
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/production'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/error-info'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/error-info'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/error-info'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/error-info'
+
+
+
+
+服务器的Ip :http://123.207.155.126:8885/
+
+
+production-id :53a9a709-63c4-451e-a0cc-299bedfdc572;
+
+example :http://123.207.155.126:8885/LeoEduCloud/productions
+
+http://123.207.155.126:8885/LeoEduCloud/productions?production-id=53a9a709-63c4-451e-a0cc-299bedfdc572
