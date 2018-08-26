@@ -1,0 +1,72 @@
+<view class='video-page-container'>
+  <view class='video_page-top'>
+
+    <video id="myVideo" class="video" src='{{videoUrl}}' binderror="videoErrorCallback">
+    </video>
+
+    <button type="primary" class="praise-button">投票 8067.11万</button>
+
+    <view class="swiper-tab">
+      <view class="swiper-tab-list {{currentTab==0 ? 'on' : ''}}" data-current="0" bindtap="swichNav">列表</view>
+      <view class="swiper-tab-list {{currentTab==1 ? 'on' : ''}}" data-current="1" bindtap="swichNav">详情</view>
+
+    </view>
+  </view>
+  <swiper scroll-y="false" current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight}}px ">
+    <!-- 列表界面 -->
+    <swiper-item>
+      <scroll-view scroll-y="true" style="height:{{winHeight}}px " bindscrolltolower="commitScrollBottom">
+        <block wx:for="{{commitItems}}" wx:key="*this">
+          <view class="item-commit">
+            <view class="item-top">
+              <view class="video-avatar">
+                <image class="video-img" src="{{item.img}}"></image>
+                <view class="video-teacher">{{item.name}}</view>
+              </view>
+
+              <image class="vote-state" src="{{item.vote == 0 ? '../../image/bq_weitoupiao.svg' : '../../image/bq_yitoupiao.svg'}}"></image>
+            </view>
+            <text class='video-desc'>{{item.desc}}</text>
+          </view>
+        </block>
+      </scroll-view>
+    </swiper-item>
+    <!-- 详情界面 -->
+    <swiper-item>
+      <scroll-view scroll-y="true" style="height:{{winHeight}}px ">
+        <view class='video-detail-container'>
+          <view class="video-detail-line-container">
+            <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_name.svg'></image>
+            <text class="video-detail-line-title">作品名称:</text>
+            <text class="video-detail-line-desc">蚯蚓在刺激下的反应</text>
+          </view>
+           <view class="video-detail-line-container">
+            <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_category.svg'></image>
+            <text class="video-detail-line-title">组别:</text>
+            <text class="video-detail-line-desc">生物</text>
+          </view>
+           <view class="video-detail-line-container">
+            <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_author.svg'></image>
+            <text class="video-detail-line-title">作者:</text>
+            <text class="video-detail-line-desc">李颖莹</text>
+          </view>
+           <view class="video-detail-line-container">
+            <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_school.svg'></image>
+            <text class="video-detail-line-title">学校:</text>
+            <text class="video-detail-line-desc">北京大学附属中学</text>
+          </view>
+          <view class="video-detail-line-container">
+           <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_introduction.svg'></image>
+            <text class="video-detail-line-title">作品简介:</text>
+          </view>
+          <view class="video-detail-introduction">
+            sakljgfaslkfhasljkfdhslsdasjlkfhajksfhjsdaksajksal;fhdsajkfdsjkasgfsdhafgbfbhwwlefg DKJHFBwjkfh
+          </view>
+        </view>
+      </scroll-view>
+
+    </swiper-item>
+
+  </swiper>
+
+</view>

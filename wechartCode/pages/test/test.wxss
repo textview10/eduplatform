@@ -1,0 +1,54 @@
+.test-container {
+  width: 100%;
+  height: 100%;
+  scroll: no;
+  background: black;
+}
+
+.test-scroll {
+  width: 100%;
+  height: 300px;
+  background: red;
+}
+
+.test-scroll1 {
+  width: 100%;
+  height: 300px;
+  background: green;
+}
+
+.test-scroll2 {
+  width: 100%;
+  height: 300px;
+  background: yellow;
+}
+
+.test-view1 {
+  width: 100%;
+  height: 300px;
+  background: black;
+}
+
+.test-view2 {
+  width: 100%;
+  height: 300px;
+  background: blue;
+}
+
+.test-view3 {
+  width: 100%;
+  height: 300px;
+  background: blueviolet;
+}
+
+.test-button-container {
+  background: #4caf50;
+  border-radius: 15rpx;
+  width: 120rpx;
+  height: 80rpx;
+}
+
+.test-text-container {
+  display: flex;
+  flex-direction: column;
+}
