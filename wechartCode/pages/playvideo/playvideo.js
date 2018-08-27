@@ -9,7 +9,9 @@ Page({
     currentMode: 0,
     currentTab: 0, // tab切换
     currentPlayPos: 0, //当前选中条目的位置
-    currentVoteNum: 0,
+    currentVoteNum: 0, //当前页投票数目
+    currentVoteState: false, //当前页是否投票
+    wechatId: "111111",
 
     videoUrl: "", //当前的url
     videoTitle: "", //当前的标题
@@ -105,11 +107,13 @@ Page({
         that.data.pageDetail.url = obj.path + "/" + obj.name;
         that.data.videoUrl = that.data.pageDetail.url;
         that.data.currentVoteNum = that.data.commitItems[that.data.currentPlayPos].vote_number;
-        console.log("currentPlayPos" + that.data.currentPlayPos + "currentVoteNum = " + that.data.currentVoteNum);
+        console.log("currentPlayPos" + that.data.currentPlayPos + "currentVoteNum = " + that.data.currentVoteNum +
+          "has_vote =  " + that.data.commitItems[that.data.currentPlayPos].has_vote);
         that.setData({
           pageDetail: that.data.pageDetail,
           videoUrl: that.data.videoUrl,
           currentVoteNum: that.data.currentVoteNum,
+          currentVoteState: that.data.commitItems[that.data.currentPlayPos].has_vote,
         });
         that.data.videoTitle = that.data.pageDetail.name;
         wx.setNavigationBarTitle({
@@ -128,7 +132,7 @@ Page({
     })
   },
 
-  sendToVote: function(e) {
+  sendToVote: function(e) { //请求投票
     var that = this;
     console.log("send to vote id = " + that.data.commitItems[that.data.currentPlayPos].production_id);
     wx.request({
@@ -138,16 +142,21 @@ Page({
         'content-type': 'application/x-www-form-urlencoded'
       },
       data: {
-        "wechat-id": '111',
+        "wechat-id": that.data.wechatId,
         "production-id": that.data.commitItems[that.data.currentPlayPos].production_id,
       },
       success: function(res) {
         var result = JSON.stringify(res.data);
         console.log("投票" + result);
         if (res.data.errorCode == 200) {
+          that.data.currentVoteState = true;
+          that.data.commitItems[that.data.currentPlayPos].has_vote = true;
           wx.showToast({
             title: '投票成功',
           })
+          that.setData({
+            currentVoteState: that.data.currentVoteState,
+          });
         } else if (res.data.errorCode == 400) {
           wx.showToast({
             title: '已经投过票了,不能重复投票哦',
@@ -168,7 +177,39 @@ Page({
     });
   },
 
-  requestListDetail: function() { //请求列表的方法
+  requestVotedItems: function(wechatId) {
+    var that = this;
+    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions?wechat-id=" + wechatId;
+    console.log("requestVotedItems");
+    wx.request({
+      url: requestUrl,
+      success: function(res) {
+        console.log(res.data);
+        for (var j = 0; j < that.data.commitItems.length; j++) {
+          that.data.commitItems[j].has_vote = false;
+        }
+        for (var i = 0; i < res.data.length; i++) {
+          var productionId = res.data[i]["production-id"];
+          for (var j = 0; j < that.data.commitItems.length; j++) {
+            if (that.data.commitItems[j].production_id == productionId) {
+              that.data.commitItems[j].has_vote = true;
+              console.log("set has vote = " + that.data.commitItems[j].has_vote);
+              break;
+            }
+          }
+
+        }
+        that.setData({
+          commitItems: that.data.commitItems,
+          currentVoteState: that.data.commitItems[that.data.currentPlayPos],
+        });
+        console.log("commitItem hasVoted =  " + that.data.commitItems[that.data.currentPlayPos].has_vote);
+        that.refreshPage(that.data.commitItems[that.data.currentPlayPos].production_id);
+      }
+    })
+  },
+
+  requestListDetail: function() { //请求整个列表的方法
     var that = this;
     var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions";
     wx.request({
@@ -183,14 +224,14 @@ Page({
           commitItem.desc = commitArray[i].brief;
           commitItem.production_id = commitArray[i]["production-id"];
           commitItem.vote_number = commitArray[i]["vote-number"];
-          console.log("vote_number = " + commitItem.vote_number);
+          commitItem.has_vote = false;
           that.data.commitItems.push(commitItem);
         }
         that.setData({
           commitItems: that.data.commitItems,
         });
         console.log("data = " + that.data.commitItems[0].production_id);
-        that.refreshPage(that.data.commitItems[0].production_id);
+        that.requestVotedItems(that.data.wechatId);
       },
       error: function() {
         console.log("error");

@@ -1,7 +1,8 @@
 <view class='test-container'>
     <view class="test-button-container">
         <view class='test-text-container'>
-            <image src="../../image/ic_jiaoyan_toupiao.svg" style="width:12rpx, height:12rpx"></image>
+            <image src="../../image/ic_jiaoyan_toupiao.svg" class='test_test_img'></image>
+            <text class="test_text_vote">已投票 11111</text>
         </view>
     </view>
     <scroll-view scroll-y="true"class="test-scroll">

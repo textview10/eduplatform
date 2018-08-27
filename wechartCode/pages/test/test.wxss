@@ -44,11 +44,26 @@
 .test-button-container {
   background: #4caf50;
   border-radius: 15rpx;
-  width: 120rpx;
+  width: 85%;
+  display: flex;
+  justify-content: center;
   height: 80rpx;
 }
 
 .test-text-container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  flex-direction: row;
+}
+.test_test_img {
+  width: 35rpx;
+  height: 35rpx;
+  margin-top: 22rpx;
+  margin-left: 25rpx;
+}
+.test_text_vote {
+  font-size: 12px;
+   margin-top: 25rpx;
+   margin-left: 20rpx;
+  color: white;
 }
