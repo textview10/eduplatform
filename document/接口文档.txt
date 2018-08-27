@@ -33,6 +33,29 @@
           schema:
             $ref: '#/definitions/error-info'
 
+response: {
+
+   "production-id": "01bb3880-e439-4f76-9ad1-d4d424b526f8",
+        "name": "梨视频 test",
+        "brief": "112312",
+        "resource-id": "88670ee2-b188-4ff9-83c5-8b6f38a2f2cf",
+        "user-id": "123",
+        "user-name": "123",
+        "activity-id": "1",
+        "group-name": "选项3",
+        "group-id": "1",
+        "award-id": null,
+        "rank": 0,
+        "total-score": 0,
+        "review-score": 0,
+        "vote-score": 0,
+        "vote-number": 1,
+        "view-count": 0,
+        "status": 1,
+        "created": "2018-08-26 17:41:24",
+        "resources": null
+}
+
 2.投票接口（输入参数：作品ID和微信ID;返回投票成功或重复投票）
 
 	 /productions/votes:
@@ -131,3 +154,5 @@ production-id :53a9a709-63c4-451e-a0cc-299bedfdc572;
 example :http://123.207.155.126:8885/LeoEduCloud/productions
 
 http://123.207.155.126:8885/LeoEduCloud/productions?production-id=53a9a709-63c4-451e-a0cc-299bedfdc572
+
+http://123.207.155.126:8885/LeoEduCloud/productions/votes

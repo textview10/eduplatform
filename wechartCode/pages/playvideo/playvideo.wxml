@@ -4,7 +4,7 @@
     <video id="myVideo" class="video" src='{{videoUrl}}' binderror="videoErrorCallback">
     </video>
 
-    <button type="primary" class="praise-button">投票 8067.11万</button>
+    <button type="primary" class="praise-button" bindtap='sendToVote'>投票  {{currentVoteNum}}</button>
 
     <view class="swiper-tab">
       <view class="swiper-tab-list {{currentTab==0 ? 'on' : ''}}" data-current="0" bindtap="swichNav">列表</view>
@@ -16,8 +16,8 @@
     <!-- 列表界面 -->
     <swiper-item>
       <scroll-view scroll-y="true" style="height:{{winHeight}}px " bindscrolltolower="commitScrollBottom">
-        <block wx:for="{{commitItems}}" wx:key="*this">
-          <view class="item-commit">
+        <block wx:for="{{commitItems}}" wx:key="*this"  >
+          <view class="item-commit" catchtap="clickForItem" data-index="{{index}}">
             <view class="item-top">
               <view class="video-avatar">
                 <image class="video-img" src="{{item.img}}"></image>
@@ -38,29 +38,29 @@
           <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_name.svg'></image>
             <text class="video-detail-line-title">作品名称:</text>
-            <text class="video-detail-line-desc">蚯蚓在刺激下的反应</text>
+            <text class="video-detail-line-desc">{{pageDetail.name}}</text>
           </view>
-           <view class="video-detail-line-container">
+          <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_category.svg'></image>
             <text class="video-detail-line-title">组别:</text>
-            <text class="video-detail-line-desc">生物</text>
+            <text class="video-detail-line-desc">{{pageDetail.groupName}}</text>
           </view>
-           <view class="video-detail-line-container">
+          <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_author.svg'></image>
             <text class="video-detail-line-title">作者:</text>
-            <text class="video-detail-line-desc">李颖莹</text>
+            <text class="video-detail-line-desc">{{pageDetail.author}}</text>
           </view>
-           <view class="video-detail-line-container">
+          <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_school.svg'></image>
             <text class="video-detail-line-title">学校:</text>
             <text class="video-detail-line-desc">北京大学附属中学</text>
           </view>
           <view class="video-detail-line-container">
-           <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_introduction.svg'></image>
+            <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_introduction.svg'></image>
             <text class="video-detail-line-title">作品简介:</text>
           </view>
           <view class="video-detail-introduction">
-            sakljgfaslkfhasljkfdhslsdasjlkfhajksfhjsdaksajksal;fhdsajkfdsjkasgfsdhafgbfbhwwlefg DKJHFBwjkfh
+            {{pageDetail.detail}}
           </view>
         </view>
       </scroll-view>
