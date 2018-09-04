@@ -112,6 +112,7 @@ Page({
         that.setData({
           pageDetail: that.data.pageDetail,
           videoUrl: that.data.videoUrl,
+          currentPlayPos: that.data.currentPlayPos,
           currentVoteNum: that.data.currentVoteNum,
           currentVoteState: that.data.commitItems[that.data.currentPlayPos].has_vote,
         });
