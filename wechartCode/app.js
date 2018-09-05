@@ -46,6 +46,11 @@ App({
     })
   },
   globalData: {
-    userInfo: null
+    userInfo: null,
+    requestListUrl: "http://123.207.155.126:8885/LeoEduCloud/productions",  //请求整个列表的url
+    requestProductionUrl: "http://123.207.155.126:8885/LeoEduCloud/productions", //请求某个视频详情的url
+    requestVoteUrl: "http://123.207.155.126:8885/LeoEduCloud/productions/votes",  //请求投票
+    requestVoteDetail: "http://123.207.155.126:8885/LeoEduCloud/productions?wechat-id=",//请求某个id的投票情况
   }
+
 })
