@@ -47,10 +47,12 @@ App({
   },
   globalData: {
     userInfo: null,
-    requestListUrl: "http://123.207.155.126:8885/LeoEduCloud/productions",  //请求整个列表的url
-    requestProductionUrl: "http://123.207.155.126:8885/LeoEduCloud/productions", //请求某个视频详情的url
-    requestVoteUrl: "http://123.207.155.126:8885/LeoEduCloud/productions/votes",  //请求投票
-    requestVoteDetail: "http://123.207.155.126:8885/LeoEduCloud/productions?wechat-id=",//请求某个id的投票情况
+    // https://zxjy.hneducloud.cn/LeoEduCloud/productions/09bc10c6-5d32-438b-9efe-d30eb028402f
+
+    requestListUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions",  //请求整个列表的url
+    requestProductionUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions", //请求某个视频详情的url
+    requestVoteUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions/votes",  //请求投票
+    requestVoteDetail: "https://zxjy.hneducloud.cn/LeoEduCloud/productions?wechat-id=",//请求某个id的投票情况
   }
 
 })
