@@ -11,7 +11,7 @@ Page({
     currentPlayPos: 0, //当前选中条目的位置
     currentVoteNum: 0, //当前页投票数目
     currentVoteState: false, //当前页是否投票
-    wechatId: "111111",
+    wechatId: "111",
 
     videoUrl: "", //当前的url
     videoTitle: "", //当前的标题
@@ -55,6 +55,7 @@ Page({
   },
 
   clickForItem: function(e) {
+    var that = this;
     this.videoContext.stop();
     var clickPos = parseInt(e.currentTarget.dataset.index);
     console.log("pos = " + this.data.currentPlayPos);
@@ -71,6 +72,9 @@ Page({
       mask: true,
     })
     this.data.currentPlayPos = clickPos;
+    that.setData({
+      currentPlayPos: that.data.currentPlayPos,
+    });
     var productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
     this.refreshPage(productionId);
   },
@@ -89,6 +93,7 @@ Page({
         try {
           if (obj.path == undefined || obj.name == undefined) {
             wx.hideLoading();
+            that.videoContext.stop();
             wx.showModal({
               title: '播放视频失败',
               content: '地址格式不正确' + obj.path + "/" + obj.name,
@@ -98,6 +103,7 @@ Page({
         } catch (err) {
           console.log("hide loading");
           wx.hideLoading();
+          that.videoContext.stop();
           wx.showModal({
             title: '播放视频失败',
             content: '地址格式不正确',
@@ -114,6 +120,7 @@ Page({
           videoUrl: that.data.videoUrl,
           currentVoteNum: that.data.currentVoteNum,
           currentVoteState: that.data.commitItems[that.data.currentPlayPos].has_vote,
+          commitItems: that.data.commitItems,
         });
         that.data.videoTitle = that.data.pageDetail.name;
         wx.setNavigationBarTitle({
@@ -150,12 +157,15 @@ Page({
         console.log("投票" + result);
         if (res.data.errorCode == 200) {
           that.data.currentVoteState = true;
+          that.data.currentVoteNum++;
           that.data.commitItems[that.data.currentPlayPos].has_vote = true;
           wx.showToast({
             title: '投票成功',
           })
           that.setData({
             currentVoteState: that.data.currentVoteState,
+            currentVoteNum: that.data.currentVoteNum,
+            commitItems: that.data.commitItems,
           });
         } else if (res.data.errorCode == 400) {
           wx.showToast({
@@ -179,7 +189,7 @@ Page({
 
   requestVotedItems: function(wechatId) {
     var that = this;
-    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions?wechat-id=" + wechatId;
+    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions/votes?wechat-id=" + wechatId;
     console.log("requestVotedItems");
     wx.request({
       url: requestUrl,
@@ -189,7 +199,7 @@ Page({
           that.data.commitItems[j].has_vote = false;
         }
         for (var i = 0; i < res.data.length; i++) {
-          var productionId = res.data[i]["production-id"];
+          var productionId = res.data[i]["productionId"];
           for (var j = 0; j < that.data.commitItems.length; j++) {
             if (that.data.commitItems[j].production_id == productionId) {
               that.data.commitItems[j].has_vote = true;

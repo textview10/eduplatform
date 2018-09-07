@@ -7,7 +7,7 @@
     <view class="{{currentVoteState? 'video-button-container-vote' : 'video-button-container-unvote'}}" bindtap='sendToVote'>
       <view class='video-text-container'>
         <image src="../../image/ic_jiaoyan_toupiao.svg" class='video_test_img'></image>
-        <text class="video_text_vote">已投票 {{currentVoteNum}}</text>
+        <text class="video_text_vote">{{currentVoteState ? '已投票' : '投票'}} {{currentVoteNum}}</text>
       </view>
     </view>
     <view class="swiper-tab">
