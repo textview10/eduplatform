@@ -196,12 +196,13 @@ Page({
     wx.request({
       url: requestUrl,
       success: function(res) {
+        console.log("voted list = " );
         console.log(res.data);
         for (var j = 0; j < that.data.commitItems.length; j++) {
           that.data.commitItems[j].has_vote = false;
         }
         for (var i = 0; i < res.data.length; i++) {
-          var productionId = res.data[i]["productionId"];
+          var productionId = res.data[i]["production-id"];
           for (var j = 0; j < that.data.commitItems.length; j++) {
             if (that.data.commitItems[j].production_id == productionId) {
               that.data.commitItems[j].has_vote = true;
@@ -288,9 +289,7 @@ Page({
     var that = this;
     console.log("onReady");
     this.videoContext = wx.createVideoContext('myVideo')
-    // that.data.videoUrl = "http://wxsnsdy.tc.qq.com/105/20210/snsdyvideodownload?filekey=30280201010421301f0201690402534804102ca905ce620b1241b726bc41dcff44e00204012882540400&bizid=1023&hy=SH&fileparam=302c020101042530230204136ffd93020457e3c4ff02024ef202031e8d7f02030f42400204045a320a0201000400";
     that.data.videoTitle = "加载中..."
-    // console.log("setUrl");
     wx.setNavigationBarTitle({
       title: that.data.videoTitle,
     })
