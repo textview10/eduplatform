@@ -1,4 +1,5 @@
 // pages/playvideo/playvideo.js
+var app = getApp()
 Page({
   /**
    * 页面的初始数据
@@ -81,7 +82,7 @@ Page({
 
   refreshPage: function(production_id) {
     var that = this;
-    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions" + "/" + production_id;
+    var requestUrl = app.globalData.requestProductionUrl + "/" + production_id;
     wx.request({
       url: requestUrl, //仅为示例，并非真实的接口地址
       success: function(res) {
@@ -118,6 +119,7 @@ Page({
         that.setData({
           pageDetail: that.data.pageDetail,
           videoUrl: that.data.videoUrl,
+          currentPlayPos: that.data.currentPlayPos,
           currentVoteNum: that.data.currentVoteNum,
           currentVoteState: that.data.commitItems[that.data.currentPlayPos].has_vote,
           commitItems: that.data.commitItems,
@@ -143,7 +145,7 @@ Page({
     var that = this;
     console.log("send to vote id = " + that.data.commitItems[that.data.currentPlayPos].production_id);
     wx.request({
-      url: "http://123.207.155.126:8885/LeoEduCloud/productions/votes", //仅为示例，并非真实的接口地址
+      url: app.globalData.requestVoteUrl, //仅为示例，并非真实的接口地址
       method: "POST",
       header: {
         'content-type': 'application/x-www-form-urlencoded'
@@ -189,7 +191,7 @@ Page({
 
   requestVotedItems: function(wechatId) {
     var that = this;
-    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions/votes?wechat-id=" + wechatId;
+    var requestUrl = app.globalData.requestVoteDetail + wechatId;
     console.log("requestVotedItems");
     wx.request({
       url: requestUrl,
@@ -221,7 +223,7 @@ Page({
 
   requestListDetail: function() { //请求整个列表的方法
     var that = this;
-    var requestUrl = "http://123.207.155.126:8885/LeoEduCloud/productions";
+    var requestUrl = app.globalData.requestListUrl;
     wx.request({
       url: requestUrl,
       success: function(res) {
