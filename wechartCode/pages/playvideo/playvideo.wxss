@@ -217,7 +217,7 @@
 
 .address_video_picker {
   font-size: 15px;
-  width: 70%;
+  width: 100%;
   justify-content: center;
 }
 
