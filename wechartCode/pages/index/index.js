@@ -7,6 +7,7 @@ Page({
     motto: "我的程序",
     userInfo: {},
     hasUserInfo: false,
+    region: ['河南省', '洛阳市', '洛龙区'],
     canIUse: wx.canIUse('button.open-type.getUserInfo')
   },
   //事件处理函数

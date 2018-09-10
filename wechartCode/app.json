@@ -1,8 +1,8 @@
 {
   "pages": [
     "pages/playvideo/playvideo",
-    "pages/test/test",
     "pages/index/index",
+    "pages/test/test",   
     "pages/logs/logs"
   ],
   "window": {

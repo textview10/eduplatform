@@ -1,23 +1,33 @@
 <view class='test-container'>
-    <view class="test-button-container">
-        <view class='test-text-container'>
-            <image src="../../image/ic_jiaoyan_toupiao.svg" class='test_test_img'></image>
-            <text class="test_text_vote">已投票 11111</text>
-        </view>
+<view class="section">
+  <view class="section__title">省市区选择器</view>
+  <picker mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+    <view class="picker">
+      当前选择：{{region[0]}}，{{region[1]}}，{{region[2]}}
     </view>
-    <scroll-view scroll-y="true"class="test-scroll">
-      <view class="test-view1"></view>
-      <view class="test-view2"></view>
-      <view class="test-view3"></view>
-    </scroll-view>
+  </picker>
+</view>
+  <view class="test-button-container">
+    <view class='test-text-container'>
+      <image src="../../image/ic_jiaoyan_toupiao.svg" class='test_test_img'></image>
+      <text class="test_text_vote">已投票 11111</text>
+    </view>
+  </view>
 
-    <scroll-view class="test-scroll1">
-      <!-- <view class="test-view1"></view>
+ 
+  <scroll-view scroll-y="true" class="test-scroll">
+    <view class="test-view1"></view>
+    <view class="test-view2"></view>
+    <view class="test-view3"></view>
+  </scroll-view>
+
+  <scroll-view class="test-scroll1">
+    <!-- <view class="test-view1"></view>
       <view class="test-view2"></view>
       <view class="test-view3"></view> -->
-    </scroll-view>
+  </scroll-view>
 
-    <scroll-view class="test-scroll2">
-    
-    </scroll-view>
+  <scroll-view class="test-scroll2">
+
+  </scroll-view>
 </view>

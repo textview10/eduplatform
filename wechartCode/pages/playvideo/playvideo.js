@@ -11,8 +11,13 @@ Page({
     currentTab: 0, // tab切换
     currentPlayPos: 0, //当前选中条目的位置
     currentVoteNum: 0, //当前页投票数目
+
     currentVoteState: false, //当前页是否投票
     wechatId: "111111",
+    region: ['河南省', '', ''],
+    pageIndex: 1, //分页加载index
+    pageSize: 8, //分页加载size
+    status: 0, //状态
 
     videoUrl: "", //当前的url
     videoTitle: "", //当前的标题
@@ -73,14 +78,14 @@ Page({
     })
     this.data.currentPlayPos = clickPos;
     var productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
-    this.refreshPage(productionId);
+    this.requestIsVoted(productionId);
   },
 
-  refreshPage: function(production_id) {
+  refreshPage: function(production_id) { //刷新界面
     var that = this;
     var requestUrl = app.globalData.requestProductionUrl + "/" + production_id;
     wx.request({
-      url: requestUrl, //仅为示例，并非真实的接口地址
+      url: requestUrl,
       success: function(res) {
         that.data.pageDetail.name = res.data.name;
         that.data.pageDetail.groupName = res.data["group-name"];
@@ -108,14 +113,12 @@ Page({
         that.data.pageDetail.url = obj.path + "/" + obj.name;
         that.data.videoUrl = that.data.pageDetail.url;
         that.data.currentVoteNum = that.data.commitItems[that.data.currentPlayPos].vote_number;
-        console.log("currentPlayPos" + that.data.currentPlayPos + "currentVoteNum = " + that.data.currentVoteNum +
-          "has_vote =  " + that.data.commitItems[that.data.currentPlayPos].has_vote);
+        console.log("currentPlayPos" + that.data.currentPlayPos + "currentVoteNum = " + that.data.currentVoteNum);
         that.setData({
           pageDetail: that.data.pageDetail,
           videoUrl: that.data.videoUrl,
           currentPlayPos: that.data.currentPlayPos,
           currentVoteNum: that.data.currentVoteNum,
-          currentVoteState: that.data.commitItems[that.data.currentPlayPos].has_vote,
         });
         that.data.videoTitle = that.data.pageDetail.name;
         wx.setNavigationBarTitle({
@@ -130,6 +133,29 @@ Page({
       error: function() {
         wx.hideLoading();
         console.log("error");
+      }
+    })
+  },
+
+  requestIsVoted: function(productId) { //查询是否已投票
+    var that = this;
+    var requestUrl = app.globalData.requestIsVoted + "?production-id=" + productId;
+    console.log("requestUrl = " + requestUrl);
+    wx.request({
+      url: requestUrl,
+      success: function(res) {
+        console.log("requestIsVoted");
+        console.log(res.data);
+        if (res.data["error-code"] == 200) {
+          that.data.currentVoteState = false;
+        } else {
+          that.data.currentVoteState = true;
+        }
+        console.log("currentVoteState = " + that.data.currentVoteState)
+        that.setData({
+          currentVoteState: that.data.currentVoteState,
+        });
+        that.refreshPage(that.data.commitItems[that.data.currentPlayPos].production_id);
       }
     })
   },
@@ -150,16 +176,19 @@ Page({
       success: function(res) {
         var result = JSON.stringify(res.data);
         console.log("投票" + result);
-        if (res.data.errorCode == 200) {
+        if (res.data["error-code"] == 200) {
           that.data.currentVoteState = true;
+          that.data.currentVoteNum += 1;
           that.data.commitItems[that.data.currentPlayPos].has_vote = true;
           wx.showToast({
             title: '投票成功',
           })
           that.setData({
             currentVoteState: that.data.currentVoteState,
+            currentVoteNum: that.data.currentVoteNum,
+            commitItems: that.data.commitItems,
           });
-        } else if (res.data.errorCode == 400) {
+        } else if (res.data["error-code"] == 400) {
           wx.showToast({
             title: '已经投过票了,不能重复投票哦',
           })
@@ -179,61 +208,32 @@ Page({
     });
   },
 
-  requestVotedItems: function(wechatId) {
+  requestListDetail: function() { //请求整个列表的方法
     var that = this;
-    var requestUrl = app.globalData.requestVoteDetail + wechatId;
-    console.log("requestVotedItems");
+    var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId;
+    console.log("requestUrl = " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
         console.log(res.data);
-        for (var j = 0; j < that.data.commitItems.length; j++) {
-          that.data.commitItems[j].has_vote = false;
-        }
-        for (var i = 0; i < res.data.length; i++) {
-          var productionId = res.data[i]["production-id"];
-          for (var j = 0; j < that.data.commitItems.length; j++) {
-            if (that.data.commitItems[j].production_id == productionId) {
-              that.data.commitItems[j].has_vote = true;
-              console.log("set has vote = " + that.data.commitItems[j].has_vote);
-              break;
-            }
-          }
-
-        }
-        that.setData({
-          commitItems: that.data.commitItems,
-          currentVoteState: that.data.commitItems[that.data.currentPlayPos],
-        });
-        console.log("commitItem hasVoted =  " + that.data.commitItems[that.data.currentPlayPos].has_vote);
-        that.refreshPage(that.data.commitItems[that.data.currentPlayPos].production_id);
-      }
-    })
-  },
-
-  requestListDetail: function() { //请求整个列表的方法
-    var that = this;
-    var requestUrl = app.globalData.requestListUrl;
-    wx.request({
-      url: requestUrl,
-      success: function(res) {
         var commitArray = res.data;
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
           commitItem.img = "http://ookzqad11.bkt.clouddn.com/avatar.png";
+          commitItem.img = undefined;
           commitItem.vote = commitArray[i].status;
           commitItem.name = commitArray[i]["user-name"];
           commitItem.desc = commitArray[i].brief;
           commitItem.production_id = commitArray[i]["production-id"];
           commitItem.vote_number = commitArray[i]["vote-number"];
-          commitItem.has_vote = false;
+          commitItem.has_vote = commitArray[i]["vote-status"] == null ? false : true;
           that.data.commitItems.push(commitItem);
         }
         that.setData({
           commitItems: that.data.commitItems,
         });
         console.log("data = " + that.data.commitItems[0].production_id);
-        that.requestVotedItems(that.data.wechatId);
+        that.requestIsVoted(that.data.commitItems[that.data.currentPlayPos].production_id);
       },
       error: function() {
         console.log("error");
@@ -264,10 +264,9 @@ Page({
     wx.getSystemInfo({
       success: function(res) {
         that.setData({
-          winHeight: (res.windowHeight) / 2,
+          winHeight: (res.windowHeight) * 58 / 100,
         });
       }
-
     });
   },
 
@@ -278,9 +277,7 @@ Page({
     var that = this;
     console.log("onReady");
     this.videoContext = wx.createVideoContext('myVideo')
-    // that.data.videoUrl = "http://wxsnsdy.tc.qq.com/105/20210/snsdyvideodownload?filekey=30280201010421301f0201690402534804102ca905ce620b1241b726bc41dcff44e00204012882540400&bizid=1023&hy=SH&fileparam=302c020101042530230204136ffd93020457e3c4ff02024ef202031e8d7f02030f42400204045a320a0201000400";
     that.data.videoTitle = "加载中..."
-    // console.log("setUrl");
     wx.setNavigationBarTitle({
       title: that.data.videoTitle,
     })
@@ -303,6 +300,12 @@ Page({
       title: '视频播放错误',
       content: "位置 " + that.data.currentPlayPos + ' 信息:' + e.detail.errMsg,
     });
+  },
+
+  bindRegionChange: function(e) {
+    this.setData({
+      region: e.detail.value
+    })
   },
 
   bindPlay: function() {
@@ -354,7 +357,7 @@ Page({
     return {
       title: this.data.videoTitle,
       path: 'pages/playvideo/playvideo',
-      imageUrl: "https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1535199239&di=d99340fc2d74173e4a2dbc4f70c2a500&src=http://tupian.qqjay.com/u/2013/1030/25_84154_3.jpg"
+      // imageUrl: "https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1535199239&di=d99340fc2d74173e4a2dbc4f70c2a500&src=http://tupian.qqjay.com/u/2013/1030/25_84154_3.jpg"
     }
   }
 })
