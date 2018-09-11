@@ -7,7 +7,7 @@
 
 .video-page-top {
   width: 100%;
-  height: 58%;
+  height: 50%;
 }
 
 .video {
@@ -171,8 +171,11 @@
 }
 
 .video-detail-introduction {
-  font-size: 14px;
   color: #777;
+  align-items: left;
+  font-size: 13px;
+  margin-left: 14rpx;
+  display: flex;
 }
 
 .video-button-container-unvote {
@@ -197,7 +200,6 @@
 
 .video-text-container {
   display: flex;
-  justify-content: center;
   flex-direction: row;
 }
 

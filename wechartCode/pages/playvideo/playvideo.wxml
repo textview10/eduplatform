@@ -11,20 +11,6 @@
       </view>
     </view>
 
-    <view class="section">
-      <view class="section__title"></view>
-      <picker mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
-        <view class="picker">
-          <view class='address_parent_container'>
-            <view class="address_video_picker"> 选择地址：{{region[0]}}，{{region[1]}}，{{region[2]}}
-            </view>
-          </view>
-
-        </view>
-
-      </picker>
-    </view>
-
     <view class="swiper-tab">
       <view class="swiper-tab-list {{currentTab==0 ? 'on' : ''}}" data-current="0" bindtap="swichNav">列表</view>
       <view class="swiper-tab-list {{currentTab==1 ? 'on' : ''}}" data-current="1" bindtap="swichNav">详情</view>
@@ -34,6 +20,17 @@
   <swiper scroll-y="false" current="{{currentTab}}" class="swiper-box" duration="300" bindchange="bindChange" style="height:{{winHeight}}px ">
     <!-- 列表界面 -->
     <swiper-item>
+    <view class="section">
+      <view class="section__title"></view>
+      <picker mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+        <view class="picker">
+          <view class='address_parent_container'>
+            <view class="address_video_picker"> 选择地址：{{region[0]}}，{{region[1]}}，{{region[2]}}
+            </view>
+          </view>
+        </view>
+      </picker>
+    </view>
       <scroll-view scroll-y="true" style="height:{{winHeight}}px " bindscrolltolower="commitScrollBottom">
         <block wx:for="{{commitItems}}" wx:key="*this">
           <view class="{{index == currentPlayPos ? 'item_commit_selected' :'item_commit_unselected'}}" catchtap="clickForItem" data-index="{{index}}">

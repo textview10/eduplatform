@@ -74,7 +74,7 @@ Page({
     }
     wx.showLoading({
       title: '加载中',
-      mask: true,
+      mask: false,
     })
     this.data.currentPlayPos = clickPos;
     var productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
@@ -209,14 +209,24 @@ Page({
   },
 
   requestListDetail: function() { //请求整个列表的方法
+    wx.showLoading({
+      title: '加载中',
+      mask: false,
+    })
+    this.videoContext.stop();
     var that = this;
-    var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId;
+    var result = "&address=" + that.data.region[1];
+    var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId + result;
     console.log("requestUrl = " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
+        wx.hideLoading();
         console.log(res.data);
         var commitArray = res.data;
+
+        that.data.commitItems = [];
+        console.log("size = " + that.data.commitItems.length);
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
           commitItem.img = "http://ookzqad11.bkt.clouddn.com/avatar.png";
@@ -233,9 +243,10 @@ Page({
           commitItems: that.data.commitItems,
         });
         console.log("data = " + that.data.commitItems[0].production_id);
-        that.requestIsVoted(that.data.commitItems[that.data.currentPlayPos].production_id);
+        that.requestIsVoted(that.data.commitItems[0].production_id);
       },
       error: function() {
+        wx.hideLoading();
         console.log("error");
       }
     })
@@ -264,7 +275,7 @@ Page({
     wx.getSystemInfo({
       success: function(res) {
         that.setData({
-          winHeight: (res.windowHeight) * 58 / 100,
+          winHeight: (res.windowHeight) / 2,
         });
       }
     });
@@ -303,6 +314,8 @@ Page({
   },
 
   bindRegionChange: function(e) {
+    this.data.region = e.detail.value;
+    this.requestListDetail();
     this.setData({
       region: e.detail.value
     })
