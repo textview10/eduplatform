@@ -174,7 +174,7 @@
   color: #777;
   align-items: left;
   font-size: 13px;
-  margin-left: 14rpx;
+  margin-left: 56rpx;
   display: flex;
 }
 

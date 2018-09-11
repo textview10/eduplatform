@@ -213,9 +213,8 @@ Page({
       title: '加载中',
       mask: false,
     })
-    this.videoContext.stop();
     var that = this;
-    var result = "&address=" + that.data.region[1];
+    var result = "&address=" + (that.data.region[1] == "省直辖县级行政区划" ? "" : that.data.region[1]);
     var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId + result;
     console.log("requestUrl = " + requestUrl);
     wx.request({
@@ -224,7 +223,6 @@ Page({
         wx.hideLoading();
         console.log(res.data);
         var commitArray = res.data;
-
         that.data.commitItems = [];
         console.log("size = " + that.data.commitItems.length);
         for (var i = 0; i < commitArray.length; i++) {
@@ -242,8 +240,12 @@ Page({
         that.setData({
           commitItems: that.data.commitItems,
         });
-        console.log("data = " + that.data.commitItems[0].production_id);
-        that.requestIsVoted(that.data.commitItems[0].production_id);
+        if (that.data.commitItems.length != 0){
+          console.log("data = " + that.data.commitItems[0].production_id);
+          that.requestIsVoted(that.data.commitItems[0].production_id);
+        } else{
+          that.videoContext.pause();
+        }
       },
       error: function() {
         wx.hideLoading();
