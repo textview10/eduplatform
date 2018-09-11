@@ -316,10 +316,15 @@ Page({
   },
 
   bindRegionChange: function(e) {
-    this.data.region = e.detail.value;
+    var that = this;
+    if (e.detail.value[1] == "省直辖县级行政区划"){
+      that.data.region = ['河南省', '', ''];
+    } else {
+      that.data.region = e.detail.value;
+    }
     this.requestListDetail();
     this.setData({
-      region: e.detail.value
+      region: that.data.region
     })
   },
 
