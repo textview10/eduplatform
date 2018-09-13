@@ -216,19 +216,30 @@
   margin-left: 20rpx;
   color: white;
 }
+.address_address_desc {
+  font-size: 14px;
+  justify-content: center;
+  margin-left: 25rpx;
+  margin-top: 5rpx;
+  color: gray;
+}
 
 .address_video_picker {
-  font-size: 15px;
-  width: 100%;
-  justify-content: center;
+  font-size: 14px; 
+}
+
+.address_icon {
+  width: 40rpx;
+  height: 50rpx;
+  margin-right: 15rpx;
 }
 
 .address_parent_container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
   width: 100%;
-  text-align: center;
   padding-top: 10rpx;
+  justify-content: space-between;
   padding-bottom: 10rpx;
+  background: #f2f2f2;
 }
