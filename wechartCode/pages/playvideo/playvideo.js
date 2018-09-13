@@ -11,6 +11,8 @@ Page({
     currentTab: 0, // tab切换
     currentPlayPos: 0, //当前选中条目的位置
     currentVoteNum: 0, //当前页投票数目
+    productionId: "", //当前课的id
+    sort: "created", //排序类型
 
     currentVoteState: false, //当前页是否投票
     wechatId: "111111",
@@ -18,6 +20,7 @@ Page({
     pageIndex: 1, //分页加载index
     pageSize: 8, //分页加载size
     status: 0, //状态
+    activityId: "1",
 
     videoUrl: "", //当前的url
     videoTitle: "", //当前的标题
@@ -77,8 +80,8 @@ Page({
       mask: false,
     })
     this.data.currentPlayPos = clickPos;
-    var productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
-    this.requestIsVoted(productionId);
+    this.data.productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
+    this.requestIsVoted(this.data.productionId);
   },
 
   refreshPage: function(production_id) { //刷新界面
@@ -127,7 +130,7 @@ Page({
         setTimeout(function() {
           wx.hideLoading();
           that.videoContext.play()
-        }, 1000);
+        }, 800);
 
       },
       error: function() {
@@ -155,7 +158,8 @@ Page({
         that.setData({
           currentVoteState: that.data.currentVoteState,
         });
-        that.refreshPage(that.data.commitItems[that.data.currentPlayPos].production_id);
+        that.data.productionId = that.data.commitItems[that.data.currentPlayPos].production_id;
+        that.refreshPage(that.data.productionId);
       }
     })
   },
@@ -214,8 +218,19 @@ Page({
       mask: false,
     })
     var that = this;
-    var result = "&address=" + (that.data.region[1] == "省直辖县级行政区划" ? "" : that.data.region[1]);
-    var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId + result;
+    var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId +
+      "&sort=" + that.data.sort;
+    if (that.data.region[1] == "省直辖县级行政区划" || that.data.region[1] == null ||
+      that.data.region[1] == "") {
+
+    } else {
+      requestUrl += "&address=" + that.data.region[1].split(0, that.data.region[1].length - 1);
+    }
+    if (that.data.activityId == "" || that.data.activityId == null) {
+
+    } else {
+      requestUrl += "&activity-id=" + that.data.activityId;
+    }
     console.log("requestUrl = " + requestUrl);
     wx.request({
       url: requestUrl,
@@ -224,7 +239,6 @@ Page({
         console.log(res.data);
         var commitArray = res.data;
         that.data.commitItems = [];
-        console.log("size = " + that.data.commitItems.length);
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
           commitItem.img = "http://ookzqad11.bkt.clouddn.com/avatar.png";
@@ -234,17 +248,33 @@ Page({
           commitItem.desc = commitArray[i].brief;
           commitItem.production_id = commitArray[i]["production-id"];
           commitItem.vote_number = commitArray[i]["vote-number"];
-          commitItem.has_vote = commitArray[i]["vote-status"] == null ? false : true;
+          commitItem.has_vote = commitArray[i]["vote-status"] == 0 ? false : true;
           that.data.commitItems.push(commitItem);
         }
         that.setData({
           commitItems: that.data.commitItems,
         });
-        if (that.data.commitItems.length != 0){
-          console.log("data = " + that.data.commitItems[0].production_id);
-          that.requestIsVoted(that.data.commitItems[0].production_id);
-        } else{
-          that.videoContext.pause();
+
+        if (that.data.productionId == null || that.data.productionId == undefined ||
+          that.data.productionId == "") {
+          if (that.data.commitItems.length != 0) {
+            that.data.productionId = that.data.commitItems[0].production_id;
+            console.log("productionId1 = " + that.data.productionId);
+            that.requestIsVoted(that.data.productionId);
+          } else {
+            that.videoContext.pause();
+          }
+        } else {
+          console.log("productionId2 = " + that.data.productionId);
+          for (var i = 0; i < that.data.commitItems.length; i++) {
+            if (that.data.productionId == that.data.commitItems[i].production_id) {
+              that.data.currentPlayPos = i;
+              that.setData({
+                currentPlayPos: that.data.currentPlayPos,
+              });
+            }
+          }
+          that.requestIsVoted(that.data.productionId);
         }
       },
       error: function() {
@@ -274,6 +304,19 @@ Page({
    */
   onLoad: function(options) {
     var that = this;
+    try {
+      var id = options.productionId;
+      if (id != null && id != undefined) {
+        wx.showModal({
+          title: '111',
+          content: 'id= ' + id,
+        })
+        console.log("id" + id);
+      }
+    } catch (e) {
+
+    }
+
     wx.getSystemInfo({
       success: function(res) {
         that.setData({
@@ -288,20 +331,42 @@ Page({
    */
   onReady: function() {
     var that = this;
-    console.log("onReady");
     this.videoContext = wx.createVideoContext('myVideo')
     that.data.videoTitle = "加载中..."
     wx.setNavigationBarTitle({
       title: that.data.videoTitle,
     })
-    that.requestListDetail();
   },
 
   /**
    * 生命周期函数--监听页面显示
    */
-  onShow: function() {
+  onShow: function(options) {
+    var that = this;
+    console.log("onShow()");
+    try {
+      if (options.scene != null && options.scene != undefined) {
+        wx.showLoading({
+          title: "scene = " + options.scene,
+        })
+      }
+    } catch (e) {
 
+    }
+    try {
+      if (options.productionId != null && options.productionId != undefined) {
+        console.log("producationId = " + options.productionId);
+        that.data.productionId = options.productionId;
+        console.log("producationId = " + that.data.productionId);
+        wx.showLoading({
+          title: "productionId = " + options.productionId,
+        })
+      }
+    } catch (e) {
+      console.log("producationId");
+      console.log(e);
+    }
+    this.getOpenId();
   },
 
   videoErrorCallback: function(e) {
@@ -317,7 +382,7 @@ Page({
 
   bindRegionChange: function(e) {
     var that = this;
-    if (e.detail.value[1] == "省直辖县级行政区划"){
+    if (e.detail.value[1] == "省直辖县级行政区划") {
       that.data.region = ['河南省', '', ''];
     } else {
       that.data.region = e.detail.value;
@@ -326,6 +391,32 @@ Page({
     this.setData({
       region: that.data.region
     })
+  },
+
+  getOpenId: function() {
+    var that = this;
+    wx.login({
+      success: res => {
+        // 发送 res.code 到后台换取 openId, sessionKey, unionId
+        if (res.code) {
+          //发起网络请求
+          var url = app.globalData.requestWechatOpenId + res.code;
+          console.log("登陆... " + url);
+          wx.request({
+            url: url,
+            success: function(res) {
+              console.log("登陆成功");
+              console.log(res.data.openid);
+              that.data.wechatId = res.data.openid;
+              that.requestListDetail();
+            }
+          })
+        } else {
+          console.log('登录失败！' + res.errMsg)
+        }
+      }
+    })
+
   },
 
   bindPlay: function() {
@@ -369,15 +460,26 @@ Page({
    * 用户点击右上角分享
    */
   onShareAppMessage: function() {
+    var that = this;
     wx.showToast({
       title: '成功',
       icon: 'success',
       duration: 2000
     });
+    var finalPath;
+    if (that.data.commitItems.length == 0) {
+      finalPath = "pages/playvideo/playvideo";
+    } else if (that.data.commitItems[that.data.currentPlayPos] == null ||
+      that.data.commitItems[that.data.currentPlayPos] == undefined) {
+      finalPath = "pages/playvideo/playvideo";
+    } else {
+      finalPath = 'pages/playvideo/playvideo?productionId=' +
+        that.data.commitItems[that.data.currentPlayPos].production_id;
+    }
+    console.log("share = " + finalPath);
     return {
       title: this.data.videoTitle,
-      path: 'pages/playvideo/playvideo',
-      // imageUrl: "https://ss0.bdstatic.com/94oJfD_bAAcT8t7mm9GUKT-xh_/timg?image&quality=100&size=b4000_4000&sec=1535199239&di=d99340fc2d74173e4a2dbc4f70c2a500&src=http://tupian.qqjay.com/u/2013/1030/25_84154_3.jpg"
+      path: finalPath,
     }
   }
 })
