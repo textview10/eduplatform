@@ -17,8 +17,8 @@ Page({
     currentVoteState: false, //当前页是否投票
     wechatId: "111111",
     region: ['河南省', '', ''],
-    pageIndex: 0, //分页加载index
-    pageSize: 8, //分页加载size
+    pageIndex: 1, //分页加载index
+    pageSize: 4, //分页加载size
     status: 1, //状态
     activityId: "1",
 
@@ -76,21 +76,22 @@ Page({
       })
       return false;
     }
-    wx.showLoading({
-      title: '加载中',
-      mask: false,
-    })
     this.data.currentPlayPos = clickPos;
     this.data.productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
     this.requestIsVoted(this.data.productionId);
   },
 
   refreshPage: function(production_id) { //刷新界面
+    wx.showLoading({
+      title: '刷新播放界面',
+      mask: false,
+    })
     var that = this;
     var requestUrl = app.globalData.requestProductionUrl + "/" + production_id;
     wx.request({
       url: requestUrl,
       success: function(res) {
+        wx.hideLoading();
         that.data.pageDetail.name = res.data.name;
         that.data.pageDetail.groupName = res.data["group-name"];
         that.data.pageDetail.author = res.data["user-name"];
@@ -143,14 +144,20 @@ Page({
   },
 
   requestIsVoted: function(productId) { //查询是否已投票
+    wx.showLoading({
+      title: '请求投票信息',
+      mask: false,
+    })
     var that = this;
     var requestUrl = app.globalData.requestIsVoted + "?production-id=" + productId;
     console.log("requestUrl = " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
-        console.log("requestIsVoted");
+        wx.hideLoading();
         console.log(res.data);
+        var result = JSON.stringify(res.data);
+        console.log(result);
         if (JSON.stringify(res.data) == "true") {
           that.data.currentVoteState = false;
         } else {
@@ -214,19 +221,23 @@ Page({
     });
   },
 
-  requestListDetail: function() { //请求整个列表的方法
+  requestListDetail: function(isLoadMore) { //请求整个列表的方法
     wx.showLoading({
-      title: '加载中',
+      title: isLoadMore ? "加载更多信息..." : '请求视频信息...',
       mask: false,
     })
     var that = this;
+    if (!isLoadMore) { //不是加载更多清空数据
+      that.data.commitItems = [];
+    }
     var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId +
       "&sort=" + that.data.sort;
     if (that.data.region[1] == "省直辖县级行政区划" || that.data.region[1] == null ||
       that.data.region[1] == "") {
 
     } else {
-      requestUrl += "&address=" + that.data.region[1].split(0, that.data.region[1].length - 1);
+      requestUrl += "&address=" + that.data.region[1].substring(0, that.data.region[1].length - 1);
+      console.log("市区 = " + that.data.region[1].substring(0, that.data.region[1].length - 1));
     }
     if (that.data.activityId == "" || that.data.activityId == null) {
 
@@ -240,7 +251,7 @@ Page({
         wx.hideLoading();
         console.log(res.data);
         var commitArray = res.data;
-        that.data.commitItems = [];
+
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
           commitItem.img = "http://ookzqad11.bkt.clouddn.com/avatar.png";
@@ -256,7 +267,7 @@ Page({
         that.setData({
           commitItems: that.data.commitItems,
         });
-
+        if (isLoadMore) return false;
         if (that.data.productionId == null || that.data.productionId == undefined ||
           that.data.productionId == "") {
           if (that.data.commitItems.length != 0) {
@@ -287,18 +298,9 @@ Page({
   },
 
   commitScrollBottom: function(e) {
-    if (true) return;
     var that = this;
-    var tempData = { //假数据
-      img: "http://ookzqad11.bkt.clouddn.com/avatar.png",
-      name: "新增马教授",
-      vote: 0,
-      desc: that.data.commitItems.length + "  蚯蚓在外界刺激下的反应",
-    };
-    that.setData({
-      commitItems: that.data.commitItems.concat(tempData),
-      // console.log("size = " + that.data.commitItems.length);
-    })
+    that.data.pageIndex += that.data.pageSize;
+    that.requestListDetail(true);
   },
 
   /**
@@ -309,10 +311,7 @@ Page({
     try {
       var id = options.productionId;
       if (id != null && id != undefined) {
-        wx.showModal({
-          title: '111',
-          content: 'id= ' + id,
-        })
+        that.data.productionId = id;
         console.log("id" + id);
       }
     } catch (e) {
@@ -348,25 +347,13 @@ Page({
     console.log("onShow()");
     try {
       if (options.scene != null && options.scene != undefined) {
-        wx.showLoading({
-          title: "scene = " + options.scene,
+        wx.showModal({
+          title: '获得scene',
+          content: "" + options.scene,
         })
       }
     } catch (e) {
 
-    }
-    try {
-      if (options.productionId != null && options.productionId != undefined) {
-        console.log("producationId = " + options.productionId);
-        that.data.productionId = options.productionId;
-        console.log("producationId = " + that.data.productionId);
-        wx.showLoading({
-          title: "productionId = " + options.productionId,
-        })
-      }
-    } catch (e) {
-      console.log("producationId");
-      console.log(e);
     }
     this.getOpenId();
   },
@@ -389,7 +376,7 @@ Page({
     } else {
       that.data.region = e.detail.value;
     }
-    this.requestListDetail();
+    this.requestListDetail(false);
     this.setData({
       region: that.data.region
     })
@@ -397,8 +384,13 @@ Page({
 
   getOpenId: function() {
     var that = this;
+    wx.showLoading({
+      title: '请求登录信息...',
+      mask: false,
+    })
     wx.login({
       success: res => {
+        wx.hideLoading();
         // 发送 res.code 到后台换取 openId, sessionKey, unionId
         if (res.code) {
           //发起网络请求
@@ -411,13 +403,14 @@ Page({
               console.log("登陆成功");
               console.log(res.data.openid);
               that.data.wechatId = res.data.openid;
-              that.requestListDetail();
+              that.requestListDetail(false);
             }
           })
         } else {
           console.log('登录失败！' + res.errMsg)
         }
       }
+
     })
 
   },
