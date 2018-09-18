@@ -149,7 +149,7 @@ Page({
       mask: false,
     })
     var that = this;
-    var requestUrl = app.globalData.requestIsVoted + "?production-id=" + productId;
+    var requestUrl = app.globalData.requestIsVoted + "?production-id=" + productId + "&wechat-id=" + that.data.wechatId;
     console.log("requestUrl = " + requestUrl);
     wx.request({
       url: requestUrl,
@@ -317,7 +317,25 @@ Page({
     } catch (e) {
 
     }
+    try {
+      if (options.scene != null && options.scene != undefined && options.scene != "") {
+        var scene = decodeURIComponent(options.scene)
+        
+        var arr = scene.split("&");
+        console.log(arr);
+        var temp_arr1 = arr[0].split("=");
+        var temp_arr2 = arr[1].split("=");
+        console.log("aid = " + temp_arr1[1] + " pid = " + temp_arr2[1]);
+        that.data.activityId = temp_arr1[1];
+        that.data.productionId = temp_arr2[1];
+        // wx.showModal({
+        //   title: '获得scene',
+        //   content: "1 = " + arr[0] + "2 = " + arr[1],
+        // })
+      }
+    } catch (e) {
 
+    }
     wx.getSystemInfo({
       success: function(res) {
         that.setData({
@@ -345,16 +363,7 @@ Page({
   onShow: function(options) {
     var that = this;
     console.log("onShow()");
-    try {
-      if (options.scene != null && options.scene != undefined) {
-        wx.showModal({
-          title: '获得scene',
-          content: "" + options.scene,
-        })
-      }
-    } catch (e) {
 
-    }
     this.getOpenId();
   },
 
