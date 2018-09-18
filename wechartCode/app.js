@@ -52,10 +52,10 @@ App({
   globalData: {
     userInfo: null,
     // https://zxjy.hneducloud.cn/LeoEduCloud/productions/09bc10c6-5d32-438b-9efe-d30eb028402f
-    requestListUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions", //请求整个列表的url
-    requestProductionUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions", //请求某个视频详情的url
-    requestVoteUrl: "https://zxjy.hneducloud.cn/LeoEduCloud/productions/votes", //请求投票
-    requestIsVoted: "https://zxjy.hneducloud.cn/LeoEduCloud/productions/isVote", //查询该接口是否已投票
-    requestWechatOpenId: "https://zxjy.hneducloud.cn/LeoEduCloud/wechatopenid?code=",
+    requestListUrl: "https://zxjy.hneducloud.cn/GatewayCenter/productions", //请求整个列表的url
+    requestProductionUrl: "https://zxjy.hneducloud.cn/GatewayCenter/productions", //请求某个视频详情的url
+    requestVoteUrl: "https://zxjy.hneducloud.cn/GatewayCenter/productions/votes", //请求投票
+    requestIsVoted: "https://zxjy.hneducloud.cn/GatewayCenter/productions/isVote", //查询该接口是否已投票
+    requestWechatOpenId: "https://zxjy.hneducloud.cn/GatewayCenter/wechatopenid?code=",
   }
 })

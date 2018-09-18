@@ -17,9 +17,9 @@ Page({
     currentVoteState: false, //当前页是否投票
     wechatId: "111111",
     region: ['河南省', '', ''],
-    pageIndex: 1, //分页加载index
+    pageIndex: 0, //分页加载index
     pageSize: 8, //分页加载size
-    status: 0, //状态
+    status: 1, //状态
     activityId: "1",
 
     videoUrl: "", //当前的url
@@ -32,6 +32,7 @@ Page({
       author: "",
       schoolName: "",
       detail: "",
+
     },
     commitItems: [],
   },
@@ -93,6 +94,7 @@ Page({
         that.data.pageDetail.name = res.data.name;
         that.data.pageDetail.groupName = res.data["group-name"];
         that.data.pageDetail.author = res.data["user-name"];
+        that.data.pageDetail.schoolName = res.data["school-name"];
         that.data.pageDetail.detail = res.data.brief;
         var obj = res.data.resources[0].files[0];
         try {
@@ -149,7 +151,7 @@ Page({
       success: function(res) {
         console.log("requestIsVoted");
         console.log(res.data);
-        if (res.data["error-code"] == 200) {
+        if (JSON.stringify(res.data) == "true") {
           that.data.currentVoteState = false;
         } else {
           that.data.currentVoteState = true;
@@ -402,6 +404,7 @@ Page({
           //发起网络请求
           var url = app.globalData.requestWechatOpenId + res.code;
           console.log("登陆... " + url);
+          // return false;
           wx.request({
             url: url,
             success: function(res) {

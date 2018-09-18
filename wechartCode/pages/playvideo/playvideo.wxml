@@ -61,7 +61,7 @@
           <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_category.svg'></image>
             <text class="video-detail-line-title">组别:</text>
-            <text class="video-detail-line-desc">{{pageDetail.groupName}}</text>
+            <text class="video-detail-line-desc">{{pageDetail.groupName == null ? '无' : pageDetail.groupName}}</text>
           </view>
           <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_author.svg'></image>
@@ -71,7 +71,7 @@
           <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_school.svg'></image>
             <text class="video-detail-line-title">学校:</text>
-            <text class="video-detail-line-desc">北京大学附属中学</text>
+            <text class="video-detail-line-desc">{{pageDetail.schoolName == null ? '无': pageDetail.schoolName}}</text>
           </view>
           <view class="video-detail-line-container">
             <image class="video-detail-line-icon" src='../../image/ic_jiaoyan_introduction.svg'></image>
