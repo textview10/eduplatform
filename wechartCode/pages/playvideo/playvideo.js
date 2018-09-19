@@ -78,7 +78,7 @@ Page({
     }
     this.data.currentPlayPos = clickPos;
     this.data.productionId = this.data.commitItems[this.data.currentPlayPos].production_id;
-    this.requestIsVoted(this.data.productionId);
+    this.requestIsVoted(this.data.productionId, true);
   },
 
   refreshPage: function(production_id) { //刷新界面
@@ -143,7 +143,7 @@ Page({
     })
   },
 
-  requestIsVoted: function(productId) { //查询是否已投票
+  requestIsVoted: function(productId, isRefresh) { //查询是否已投票
     wx.showLoading({
       title: '请求投票信息',
       mask: false,
@@ -168,7 +168,7 @@ Page({
           currentVoteState: that.data.currentVoteState,
         });
         that.data.productionId = that.data.commitItems[that.data.currentPlayPos].production_id;
-        that.refreshPage(that.data.productionId);
+        if (isRefresh) that.refreshPage(that.data.productionId);
       }
     })
   },
@@ -189,9 +189,10 @@ Page({
       success: function(res) {
         var result = JSON.stringify(res.data);
         console.log("投票" + result);
+        that.requestIsVoted(that.data.commitItems[that.data.currentPlayPos].production_id, false);
         if (res.data["error-code"] == 200) {
-          that.data.currentVoteState = true;
-          that.data.currentVoteNum += 1;
+          // that.data.currentVoteState = true;
+          // that.data.currentVoteNum += 1;
           that.data.commitItems[that.data.currentPlayPos].has_vote = true;
           wx.showToast({
             title: '投票成功',
@@ -201,16 +202,17 @@ Page({
             currentVoteNum: that.data.currentVoteNum,
             commitItems: that.data.commitItems,
           });
+         
         } else if (res.data["error-code"] == 400) {
           wx.showToast({
-            title: '已经投过票了,不能重复投票哦',
+            title: '已经投过票了',
           })
         } else {
           wx.showToast({
             title: '投票失败',
           })
         }
-
+      
       },
       error: function(res) {
         console.log("投票失败" + res.data);
@@ -273,7 +275,7 @@ Page({
           if (that.data.commitItems.length != 0) {
             that.data.productionId = that.data.commitItems[0].production_id;
             console.log("productionId1 = " + that.data.productionId);
-            that.requestIsVoted(that.data.productionId);
+            that.requestIsVoted(that.data.productionId,true);
           } else {
             that.videoContext.pause();
           }
@@ -287,7 +289,7 @@ Page({
               });
             }
           }
-          that.requestIsVoted(that.data.productionId);
+          that.requestIsVoted(that.data.productionId,true);
         }
       },
       error: function() {
@@ -320,7 +322,7 @@ Page({
     try {
       if (options.scene != null && options.scene != undefined && options.scene != "") {
         var scene = decodeURIComponent(options.scene)
-        
+
         var arr = scene.split("&");
         console.log(arr);
         var temp_arr1 = arr[0].split("=");
