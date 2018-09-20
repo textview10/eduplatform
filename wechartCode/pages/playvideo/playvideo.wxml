@@ -22,12 +22,11 @@
     <swiper-item>
       <view class="section">
         <view class="section__title"></view>
-        <picker mode="region" bindchange="bindRegionChange" value="{{region}}" custom-item="{{customItem}}">
+        <picker bindchange="bindRegionChange" mode="selector" value="{{cityIndex}}" range="{{cityList}}">
           <view class="picker">
             <view class='address_parent_container'>
               <view class='address_address_desc'>选择地址</view>
-              <view class="address_video_picker"> {{region[0]}}  {{region[1]}}  {{region[2]}}
-              </view>
+              <view class="address_video_picker"> {{cityList[cityIndex]}}</view>
               <image class="address_icon" src="../../image/more.svg"></image>
             </view>
           </view>

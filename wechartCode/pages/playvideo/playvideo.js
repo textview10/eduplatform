@@ -16,7 +16,11 @@ Page({
 
     currentVoteState: false, //当前页是否投票
     wechatId: "111111",
-    region: ['河南省', '', ''],
+    region: ['郑州市'],
+    cityIndex: 1,
+    cityList: ["全部", "郑州市", "洛阳市", "开封市", "平顶山市", "开封市", "安阳市",
+      "鹤壁市", "新乡市", "焦作市", "濮阳市", "许昌市", "漯河市", "三门峡市", "南阳市", "商丘市", "信阳市", "周口市", "驻马店市"
+    ],
     pageIndex: 1, //分页加载index
     pageSize: 4, //分页加载size
     status: 1, //状态
@@ -88,9 +92,11 @@ Page({
     })
     var that = this;
     var requestUrl = app.globalData.requestProductionUrl + "/" + production_id;
+    console.log("refreshPage " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
+        console.log(res.data);
         wx.hideLoading();
         that.data.pageDetail.name = res.data.name;
         that.data.pageDetail.groupName = res.data["group-name"];
@@ -118,6 +124,7 @@ Page({
         }
         that.data.pageDetail.url = obj.path + "/" + obj.name;
         that.data.videoUrl = that.data.pageDetail.url;
+
         that.data.currentVoteNum = that.data.commitItems[that.data.currentPlayPos].vote_number;
         console.log("currentPlayPos" + that.data.currentPlayPos + "currentVoteNum = " + that.data.currentVoteNum);
         that.setData({
@@ -150,7 +157,7 @@ Page({
     })
     var that = this;
     var requestUrl = app.globalData.requestIsVoted + "?production-id=" + productId + "&wechat-id=" + that.data.wechatId;
-    console.log("requestUrl = " + requestUrl);
+    console.log("requestIsVoted = " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
@@ -167,7 +174,6 @@ Page({
         that.setData({
           currentVoteState: that.data.currentVoteState,
         });
-        that.data.productionId = that.data.commitItems[that.data.currentPlayPos].production_id;
         if (isRefresh) that.refreshPage(that.data.productionId);
       }
     })
@@ -192,7 +198,7 @@ Page({
         that.requestIsVoted(that.data.commitItems[that.data.currentPlayPos].production_id, false);
         if (res.data["error-code"] == 200) {
           // that.data.currentVoteState = true;
-          // that.data.currentVoteNum += 1;
+          that.data.currentVoteNum += 1;
           that.data.commitItems[that.data.currentPlayPos].has_vote = true;
           wx.showToast({
             title: '投票成功',
@@ -202,7 +208,7 @@ Page({
             currentVoteNum: that.data.currentVoteNum,
             commitItems: that.data.commitItems,
           });
-         
+
         } else if (res.data["error-code"] == 400) {
           wx.showToast({
             title: '已经投过票了',
@@ -212,7 +218,7 @@ Page({
             title: '投票失败',
           })
         }
-      
+
       },
       error: function(res) {
         console.log("投票失败" + res.data);
@@ -234,26 +240,26 @@ Page({
     }
     var requestUrl = app.globalData.requestListUrl + "?status=" + that.data.status + "&start=" + that.data.pageIndex + "&count=" + that.data.pageSize + "&wechat-id=" + that.data.wechatId +
       "&sort=" + that.data.sort;
-    if (that.data.region[1] == "省直辖县级行政区划" || that.data.region[1] == null ||
-      that.data.region[1] == "") {
-
-    } else {
-      requestUrl += "&address=" + that.data.region[1].substring(0, that.data.region[1].length - 1);
-      console.log("市区 = " + that.data.region[1].substring(0, that.data.region[1].length - 1));
+    if (that.data.cityIndex > 0) {
+      var cityName = that.data.cityList[that.data.cityIndex];
+      requestUrl += "&address=" + cityName.substring(0, cityName.length - 1);
+      console.log("市区 = " + that.data.cityList[that.data.cityIndex].substring(0, cityName.length - 1));
     }
     if (that.data.activityId == "" || that.data.activityId == null) {
 
     } else {
       requestUrl += "&activity-id=" + that.data.activityId;
     }
-    console.log("requestUrl = " + requestUrl);
+    console.log("requestListDetail = " + requestUrl);
     wx.request({
       url: requestUrl,
       success: function(res) {
         wx.hideLoading();
         console.log(res.data);
         var commitArray = res.data;
-
+        if (!isLoadMore){
+          that.data.commitItems = []; 
+        }
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
           commitItem.img = "http://ookzqad11.bkt.clouddn.com/avatar.png";
@@ -275,21 +281,24 @@ Page({
           if (that.data.commitItems.length != 0) {
             that.data.productionId = that.data.commitItems[0].production_id;
             console.log("productionId1 = " + that.data.productionId);
-            that.requestIsVoted(that.data.productionId,true);
+            that.requestIsVoted(that.data.productionId, true);
           } else {
             that.videoContext.pause();
           }
         } else {
           console.log("productionId2 = " + that.data.productionId);
+          var pos = -1;
           for (var i = 0; i < that.data.commitItems.length; i++) {
             if (that.data.productionId == that.data.commitItems[i].production_id) {
-              that.data.currentPlayPos = i;
-              that.setData({
-                currentPlayPos: that.data.currentPlayPos,
-              });
+              pos = i;
+              break;
             }
           }
-          that.requestIsVoted(that.data.productionId,true);
+          that.data.currentPlayPos = pos;
+          that.setData({
+            currentPlayPos: that.data.currentPlayPos,
+          });
+          that.requestIsVoted(that.data.productionId, true);
         }
       },
       error: function() {
@@ -382,15 +391,14 @@ Page({
 
   bindRegionChange: function(e) {
     var that = this;
-    if (e.detail.value[1] == "省直辖县级行政区划") {
-      that.data.region = ['河南省', '', ''];
-    } else {
-      that.data.region = e.detail.value;
-    }
-    this.requestListDetail(false);
+    console.log("bindRegionChange() = " + e.detail.value);
+    that.data.cityIndex = e.detail.value;
+    that.data.currentPlayPos = 0;
     this.setData({
-      region: that.data.region
+      cityIndex: that.data.cityIndex
     })
+    this.requestListDetail(false);
+
   },
 
   getOpenId: function() {
