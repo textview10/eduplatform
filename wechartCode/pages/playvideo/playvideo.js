@@ -21,7 +21,7 @@ Page({
     cityList: ["全部", "郑州市", "洛阳市", "开封市", "平顶山市", "开封市", "安阳市",
       "鹤壁市", "新乡市", "焦作市", "濮阳市", "许昌市", "漯河市", "三门峡市", "南阳市", "商丘市", "信阳市", "周口市", "驻马店市"
     ],
-    pageIndex: 1, //分页加载index
+    pageIndex: 0, //分页加载index
     pageSize: 4, //分页加载size
     status: 1, //状态
     activityId: "1",
@@ -162,11 +162,17 @@ Page({
       url: requestUrl,
       success: function(res) {
         wx.hideLoading();
+        console.log("查询是否投票:");
         console.log(res.data);
         var result = JSON.stringify(res.data);
         console.log(result);
         if (JSON.stringify(res.data) == "true") {
           that.data.currentVoteState = false;
+        } else if (res.data["error-code"] == 400){
+          wx.showModal({
+            title: '当前视频不存在哦',
+            content: '当前视频不存在 ' + productId,
+          })
         } else {
           that.data.currentVoteState = true;
         }
@@ -176,6 +182,7 @@ Page({
         });
         if (isRefresh) that.refreshPage(that.data.productionId);
       }
+
     })
   },
 
@@ -257,8 +264,8 @@ Page({
         wx.hideLoading();
         console.log(res.data);
         var commitArray = res.data;
-        if (!isLoadMore){
-          that.data.commitItems = []; 
+        if (!isLoadMore) {
+          that.data.commitItems = [];
         }
         for (var i = 0; i < commitArray.length; i++) {
           var commitItem = {};
@@ -339,14 +346,12 @@ Page({
         console.log("aid = " + temp_arr1[1] + " pid = " + temp_arr2[1]);
         that.data.activityId = temp_arr1[1];
         that.data.productionId = temp_arr2[1];
-        // wx.showModal({
-        //   title: '获得scene',
-        //   content: "1 = " + arr[0] + "2 = " + arr[1],
-        // })
       }
     } catch (e) {
 
     }
+    //TODO
+    // that.data.productionId = "1234567";
     wx.getSystemInfo({
       success: function(res) {
         that.setData({
@@ -373,9 +378,15 @@ Page({
    */
   onShow: function(options) {
     var that = this;
-    console.log("onShow()");
-
-    this.getOpenId();
+    var openId = wx.getStorageSync("openid");
+    if (openId == null || openId == undefined || openId == "") {
+      console.log("openId == null request server to request openId");
+      this.getOpenId();
+    } else {
+      console.log("openId != null and openId = " + openId);
+      that.data.wechatId = openId;
+      that.requestListDetail(false);
+    }
   },
 
   videoErrorCallback: function(e) {
@@ -422,6 +433,7 @@ Page({
               console.log("登陆成功");
               console.log(res.data.openid);
               that.data.wechatId = res.data.openid;
+              wx.setStorageSync('openid', that.data.wechatId);
               that.requestListDetail(false);
             }
           })
